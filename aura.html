@@ -70,6 +70,413 @@
       );
     };
 
+    const CategoryMenu = ({ categories, subcategories, setSelectedCategory, setSelectedSubcategory }) => {
+      const [isOpen, setIsOpen] = React.useState(false);
+      const [openCategory, setOpenCategory] = React.useState(null);
+      const menuRef = React.useRef(null);
+
+      useOutsideClick(menuRef, () => setIsOpen(false));
+
+      const toggleCategory = (category) => {
+        setOpenCategory(openCategory === category ? null : category);
+      };
+
+      return (
+        <div className="relative" ref={menuRef}>
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="flex items-center text-white hover:text-yellow-400 focus:outline-none"
+          >
+            Categories
+            <svg
+              className={`w-4 h-4 ml-2 transform transition-transform ${isOpen ? 'rotate-180' : ''}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          {isOpen && (
+            <div className="absolute left-0 mt-2 w-64 bg-white rounded-lg shadow-lg z-50 p-4 max-h-96 overflow-y-auto">
+              <ul className="space-y-2">
+                {categories.map((category) => (
+                  <li key={category}>
+                    <div className="flex items-center justify-between">
+                      <button
+                        onClick={() => {
+                          setSelectedCategory(category);
+                          setSelectedSubcategory(null);
+                          toggleCategory(category);
+                        }}
+                        className="flex-1 text-left text-sm font-bold text-gray-900 hover:text-purple-600"
+                      >
+                        {category}
+                      </button>
+                      {subcategories[category]?.length > 0 && (
+                        <button
+                          onClick={() => toggleCategory(category)}
+                          className="text-gray-500 hover:text-purple-600 focus:outline-none"
+                        >
+                          <svg
+                            className={`w-4 h-4 transform transition-transform ${
+                              openCategory === category ? 'rotate-90' : ''
+                            }`}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                    {subcategories[category]?.length > 0 && openCategory === category && (
+                      <ul className="mt-1 ml-3 space-y-1">
+                        {subcategories[category].map((subcategory) => (
+                          <li key={subcategory.name}>
+                            <button
+                              onClick={() => {
+                                setSelectedCategory(category);
+                                setSelectedSubcategory(subcategory.name);
+                                setIsOpen(false);
+                              }}
+                              className="text-sm text-gray-600 hover:text-purple-600"
+                            >
+                              {subcategory.name}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    const CategoryFilters = ({ categories, subcategories, selectedCategory, selectedSubcategory, setSelectedCategory, setSelectedSubcategory }) => {
+      return (
+        <div className="bg-[#1C2526] text-white py-4 mt-4">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="mb-4">
+              <div className="flex flex-wrap gap-2 mt-2">
+                <button
+                  onClick={() => {
+                    setSelectedCategory(null);
+                    setSelectedSubcategory(null);
+                  }}
+                  className={`px-4 py-2 rounded-full text-sm font-medium ${
+                    !selectedCategory ? 'bg-white text-[#1C2526]' : 'bg-[#2A3435] hover:bg-[#343F40]'
+                  }`}
+                >
+                  All
+                </button>
+                {categories.map((category) => (
+                  <button
+                    key={category}
+                    onClick={() => {
+                      setSelectedCategory(category);
+                      setSelectedSubcategory(null);
+                    }}
+                    className={`px-4 py-2 rounded-full text-sm font-medium ${
+                      selectedCategory === category ? 'bg-white text-[#1C2526]' : 'bg-[#2A3435] hover:bg-[#343F40]'
+                    }`}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {selectedCategory && subcategories[selectedCategory]?.length > 0 && (
+              <div>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  <button
+                    onClick={() => setSelectedSubcategory(null)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium ${
+                      !selectedSubcategory ? 'bg-white text-[#1C2526]' : 'bg-[#2A3435] hover:bg-[#343F40]'
+                    }`}
+                  >
+                    All
+                  </button>
+                  {subcategories[selectedCategory].map((subcategory) => (
+                    <button
+                      key={subcategory.name}
+                      onClick={() => setSelectedSubcategory(subcategory.name)}
+                      className={`px-4 py-2 rounded-full text-sm font-medium ${
+                        selectedSubcategory === subcategory.name ? 'bg-white text-[#1C2526]' : 'bg-[#2A3435] hover:bg-[#343F40]'
+                      }`}
+                    >
+                      {subcategory.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    };
+
+    const SaleProductsSection = ({ products, openVariationModal, addToCart, toggleWishlist, wishlist }) => {
+      const saleProducts = (Array.isArray(products.current) ? products.current : []).filter((product) => product.discount);
+
+      if (saleProducts.length === 0) return null;
+
+      return (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Products on Sale</h2>
+          <div className="flex overflow-x-auto space-x-4 pb-4">
+            {saleProducts.map((product, index) => (
+              <div key={index} className="flex-shrink-0 w-64">
+                <ProductCard
+                  {...product}
+                  openVariationModal={openVariationModal}
+                  addToCart={addToCart}
+                  toggleWishlist={toggleWishlist}
+                  isWishlisted={wishlist.includes(product.title)}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    const AddProductModal = ({ onAddProduct, onClose }) => {
+      const [title, setTitle] = React.useState("");
+      const [priceUGX, setPriceUGX] = React.useState("");
+      const [image, setImage] = React.useState("");
+      const [category, setCategory] = React.useState("");
+      const [subcategory, setSubcategory] = React.useState("");
+      const [variations, setVariations] = React.useState("");
+      const [discount, setDiscount] = React.useState("");
+      const [isFreeShipping, setIsFreeShipping] = React.useState(true);
+      const [isOnSale, setIsOnSale] = React.useState(false);
+      const [isGlobal, setIsGlobal] = React.useState(false);
+      const [isOfficialStore, setIsOfficialStore] = React.useState(false);
+      const [error, setError] = React.useState("");
+      const modalRef = React.useRef(null);
+
+      useOutsideClick(modalRef, onClose);
+
+      const handleAddProduct = () => {
+        if (!title.trim() || !priceUGX || !image.trim() || !category.trim() || !subcategory.trim()) {
+          setError("Please fill all required fields");
+          return;
+        }
+        setError("");
+        onAddProduct({
+          title,
+          priceUGX: parseFloat(priceUGX),
+          originalPriceUGX: discount ? Math.round(parseFloat(priceUGX) / (1 - parseFloat(discount) / 100)) : undefined,
+          discount: discount ? parseFloat(discount) : undefined,
+          image,
+          category: isOnSale ? "Sale" : category,
+          subcategory,
+          variations: variations.trim() ? variations.split(",").map((v) => v.trim()) : [],
+          isOfficialStore,
+          isRefurbished: false,
+          isGlobal,
+          isFreeShipping
+        });
+        onClose();
+      };
+
+      return (
+        <div className="fixed top-20 left-0 right-0 z-50 flex justify-center">
+          <div ref={modalRef} className="bg-white rounded-lg shadow-lg p-4 max-w-md w-full">
+            <h3 className="text-md font-semibold text-gray-900 mb-2">Add New Product</h3>
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              <div>
+                <label className="block text-xs font-medium text-gray-700">Title</label>
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="mt-1 w-full border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="Product Name"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700">Price (UGX)</label>
+                <input
+                  type="number"
+                  value={priceUGX}
+                  onChange={(e) => setPriceUGX(e.target.value)}
+                  className="mt-1 w-full border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="100000"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700">Discount (%)</label>
+                <input
+                  type="number"
+                  value={discount}
+                  onChange={(e) => setDiscount(e.target.value)}
+                  className="mt-1 w-full border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="20"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700">Shipping</label>
+                <select
+                  value={isFreeShipping ? "free" : "fee"}
+                  onChange={(e) => setIsFreeShipping(e.target.value === "free")}
+                  className="mt-1 w-full border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="free">Free Shipping</option>
+                  <option value="fee">Shipping at a Fee</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700">On Sale</label>
+                <input
+                  type="checkbox"
+                  checked={isOnSale}
+                  onChange={(e) => setIsOnSale(e.target.checked)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700">Shipped from Abroad</label>
+                <input
+                  type="checkbox"
+                  checked={isGlobal}
+                  onChange={(e) => setIsGlobal(e.target.checked)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700">Official Store</label>
+                <input
+                  type="checkbox"
+                  checked={isOfficialStore}
+                  onChange={(e) => setIsOfficialStore(e.target.checked)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700">Image URL</label>
+                <input
+                  type="text"
+                  value={image}
+                  onChange={(e) => setImage(e.target.value)}
+                  className="mt-1 w-full border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="https://via.placeholder.com/300"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700">Category</label>
+                <input
+                  type="text"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  disabled={isOnSale}
+                  className="mt-1 w-full border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:bg-gray-100"
+                  placeholder="e.g., Women Clothing"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700">Subcategory</label>
+                <input
+                  type="text"
+                  value={subcategory}
+                  onChange={(e) => setSubcategory(e.target.value)}
+                  className="mt-1 w-full border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="e.g., Dresses"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700">Variations (comma-separated, optional)</label>
+                <input
+                  type="text"
+                  value={variations}
+                  onChange={(e) => setVariations(e.target.value)}
+                  className="mt-1 w-full border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="M,L,XL"
+                />
+              </div>
+              {error && <p className="text-red-500 text-xs">{error}</p>}
+            </div>
+            <div className="flex justify-end space-x-2 mt-3">
+              <button
+                onClick={onClose}
+                className="bg-gray-300 text-gray-900 uppercase font-bold py-1 px-3 rounded-full hover:bg-gray-400 transition text-xs"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddProduct}
+                className="bg-purple-500 text-white uppercase font-bold py-1 px-3 rounded-full hover:bg-purple-600 transition text-xs"
+              >
+                Add Product
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const RemoveProductModal = ({ products, onRemoveProduct, onClose }) => {
+      const [selectedProduct, setSelectedProduct] = React.useState("");
+      const [error, setError] = React.useState("");
+      const modalRef = React.useRef(null);
+
+      useOutsideClick(modalRef, onClose);
+
+      const handleRemoveProduct = () => {
+        if (!selectedProduct) {
+          setError("Please select a product to remove");
+          return;
+        }
+        setError("");
+        onRemoveProduct(selectedProduct);
+        onClose();
+      };
+
+      return (
+        <div className="fixed top-20 left-0 right-0 z-50 flex justify-center">
+          <div ref={modalRef} className="bg-white rounded-lg shadow-lg p-4 max-w-md w-full">
+            <h3 className="text-md font-semibold text-gray-900 mb-2">Remove Product</h3>
+            <div className="space-y-2">
+              <div>
+                <label className="block text-xs font-medium text-gray-700">Select Product</label>
+                <select
+                  value={selectedProduct}
+                  onChange={(e) => setSelectedProduct(e.target.value)}
+                  className="mt-1 w-full border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="">Select a product</option>
+                  {products.map((product, index) => (
+                    <option key={index} value={product.title}>{product.title}</option>
+                  ))}
+                </select>
+              </div>
+              {error && <p className="text-red-500 text-xs">{error}</p>}
+            </div>
+            <div className="flex justify-end space-x-2 mt-3">
+              <button
+                onClick={onClose}
+                className="bg-gray-300 text-gray-900 uppercase font-bold py-1 px-3 rounded-full hover:bg-gray-400 transition text-xs"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRemoveProduct}
+                className="bg-red-500 text-white uppercase font-bold py-1 px-3 rounded-full hover:bg-red-600 transition text-xs"
+              >
+                Remove Product
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
     const VariationModal = ({ product, onAddToCart, onClose }) => {
       const [selectedSize, setSelectedSize] = React.useState(null);
       const [error, setError] = React.useState("");
@@ -90,7 +497,7 @@
 
       return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div ref={modalRef} className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
+          <div ref={modalRef} className="bg-white rounded-lg shadow-lg p-4 max-w-md w-full">
             <div className="flex items-center space-x-4 mb-4">
               <img src={product.image} alt={product.title} className="w-16 h-16 object-contain rounded" />
               <h3 className="text-lg font-semibold text-gray-900">{product.title}</h3>
@@ -132,37 +539,26 @@
     };
 
     const CheckoutModal = ({ cart, onConfirm, onClose }) => {
-      const [name, setName] = React.useState("");
-      const [address, setAddress] = React.useState("");
-      const [phone, setPhone] = React.useState("");
-      const [error, setError] = React.useState("");
       const modalRef = React.useRef(null);
       const exchangeRate = 0.00027;
+      const vatRate = 0.18;
+      const transportFee = 9000;
 
       useOutsideClick(modalRef, onClose);
 
       const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-      const vat = subtotal * 0.18;
-      const deliveryFee = 10000;
-      const total = subtotal + vat + deliveryFee;
+      const vat = subtotal * vatRate;
+      const totalTransport = transportFee * cart.length;
+      const total = subtotal + vat + totalTransport;
+
       const subtotalUSD = (subtotal * exchangeRate).toFixed(2);
       const vatUSD = (vat * exchangeRate).toFixed(2);
-      const deliveryFeeUSD = (deliveryFee * exchangeRate).toFixed(2);
+      const transportUSD = (totalTransport * exchangeRate).toFixed(2);
       const totalUSD = (total * exchangeRate).toFixed(2);
 
       const handleConfirm = () => {
-        if (!name.trim() || !address.trim() || !phone.trim()) {
-          setError("Please fill all fields");
-          return;
-        }
-        setError("");
-
-        // Generate minimalist invoice message
         let invoice = `📋 *aura Invoice*\n`;
         invoice += `===\n\n`;
-        invoice += `*Name*: ${name}\n`;
-        invoice += `*Address*: ${address}\n`;
-        invoice += `*Phone*: ${phone}\n\n`;
         invoice += `=== Order ===\n`;
         cart.forEach((item, index) => {
           const itemTotal = item.price * item.quantity;
@@ -175,21 +571,16 @@
         invoice += `\n=== Summary ===\n`;
         invoice += `Subtotal....UGX ${subtotal.toLocaleString()} (USD ${subtotalUSD})\n`;
         invoice += `VAT (18%)...UGX ${vat.toLocaleString()} (USD ${vatUSD})\n`;
-        invoice += `Delivery....UGX ${deliveryFee.toLocaleString()} (USD ${deliveryFeeUSD})\n`;
+        invoice += `Transport...UGX ${totalTransport.toLocaleString()} (USD ${transportUSD})\n`;
         invoice += `*Total*......*UGX ${total.toLocaleString()}* (USD ${totalUSD})\n`;
         invoice += `===\n`;
         invoice += `Thank you for your order! Please confirm receipt. ✅\n`;
         invoice += `aura - Premium Shopping`;
 
-        // URL-encode the message
         const encodedMessage = encodeURIComponent(invoice);
         const whatsappUrl = `https://wa.me/256758468490?text=${encodedMessage}`;
-
-        // Open WhatsApp in a new tab/window
         window.open(whatsappUrl, '_blank');
-
-        // Call onConfirm and clear cart
-        onConfirm({ name, address, phone });
+        onConfirm();
         onClose();
       };
 
@@ -199,42 +590,26 @@
             ref={modalRef}
             className="bg-white rounded-lg shadow-lg p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto"
           >
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">Enter Delivery Details</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">Order Summary</h3>
             <div className="space-y-2">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Full Name</label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  placeholder="John Doe"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Delivery Address</label>
-                <textarea
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  placeholder="123 Main St, Kampala"
-                  rows="3"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Phone Number</label>
-                <input
-                  type="text"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  placeholder="+256 123 456 789"
-                />
-              </div>
-              {error && <p className="text-red-500 text-sm">{error}</p>}
+              {cart.map((item, index) => (
+                <div key={index} className="flex items-center justify-between py-2 border-b">
+                  <div className="flex items-center space-x-3">
+                    <img src={item.image} alt={item.title} className="w-12 h-12 object-contain rounded" />
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-900 truncate w-40">{item.title}</h4>
+                      {item.size && <p className="text-xs text-gray-600">Size: {item.size}</p>}
+                      <p className="text-xs text-gray-600">UGX {item.price.toLocaleString()} x {item.quantity}</p>
+                    </div>
+                  </div>
+                  <p className="text-sm font-semibold">
+                    UGX {(item.price * item.quantity).toLocaleString()}
+                  </p>
+                </div>
+              ))}
             </div>
             <div className="mt-4">
-              <h4 className="text-sm font-medium text-gray-900 mb-1">Order Summary</h4>
+              <h4 className="text-sm font-medium text-gray-900 mb-1">Price Breakdown</h4>
               <div className="space-y-1">
                 <div className="flex justify-between text-sm">
                   <span>Subtotal:</span>
@@ -251,10 +626,10 @@
                   </div>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span>Delivery Fee:</span>
+                  <span>Transport Fee:</span>
                   <div className="text-right">
-                    <span>UGX {deliveryFee.toLocaleString()}</span>
-                    <p className="text-xs text-gray-600">USD {deliveryFeeUSD}</p>
+                    <span>UGX {totalTransport.toLocaleString()}</span>
+                    <p className="text-xs text-gray-600">USD {transportUSD}</p>
                   </div>
                 </div>
                 <div className="flex justify-between text-lg font-semibold border-t pt-1">
@@ -277,7 +652,7 @@
                 onClick={handleConfirm}
                 className="bg-purple-500 text-white uppercase font-bold py-2 px-4 rounded-full hover:bg-purple-600 transition text-sm"
               >
-                PAY NOW
+                Confirm Order
               </button>
             </div>
           </div>
@@ -287,8 +662,14 @@
 
     const MiniCart = ({ cart, removeFromCart, closeMiniCart, openCheckoutModal }) => {
       const exchangeRate = 0.00027;
+      const vatRate = 0.18;
+      const transportFee = 9000;
+
       const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-      const subtotalUSD = (subtotal * exchangeRate).toFixed(2);
+      const vat = subtotal * vatRate;
+      const totalTransport = transportFee * cart.length;
+      const total = subtotal + vat + totalTransport;
+      const totalUSD = (total * exchangeRate).toFixed(2);
 
       return (
         <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-50 p-4 max-h-96 overflow-y-auto">
@@ -327,10 +708,10 @@
               ))}
               <div className="mt-4">
                 <div className="flex justify-between text-lg font-semibold mb-2">
-                  <span>Subtotal:</span>
+                  <span>Total:</span>
                   <div className="text-right">
-                    <span>UGX {subtotal.toLocaleString()}</span>
-                    <p className="text-xs text-gray-600">USD {subtotalUSD}</p>
+                    <span>UGX {total.toLocaleString()}</span>
+                    <p className="text-xs text-gray-600">USD {totalUSD}</p>
                   </div>
                 </div>
                 <button
@@ -346,12 +727,42 @@
       );
     };
 
-    const MiniWishlist = ({ wishlist, toggleWishlist, products, closeMiniWishlist }) => {
+    const MiniWishlist = ({ wishlist, toggleWishlist, products, closeMiniWishlist, addToCart, openVariationModal }) => {
       const exchangeRate = 0.00027;
+      const vatRate = 0.18;
+      const transportFee = 9000;
 
-      const wishlistItems = wishlist && Array.isArray(products.current)
-        ? wishlist.map((title) => products.current.find((product) => product && product.title === title)).filter(Boolean)
-        : [];
+      const wishlistItems = wishlist.map((title) => {
+        const product = Array.isArray(products.current)
+          ? products.current.find((p) => p && p.title === title)
+          : null;
+        return product || { title, priceUGX: 0, image: '' };
+      }).filter(Boolean);
+
+      const handleAddAllToCart = () => {
+        let variationModalOpened = false;
+        wishlistItems.forEach((item) => {
+          if (!variationModalOpened && item.variations && item.variations.length > 0) {
+            openVariationModal({
+              title: item.title,
+              price: item.priceUGX,
+              image: item.image,
+              variations: item.variations
+            });
+            variationModalOpened = true;
+          } else if (item.priceUGX > 0 && (!item.variations || item.variations.length === 0)) {
+            addToCart({
+              title: item.title,
+              price: item.priceUGX,
+              image: item.image
+            });
+          }
+        });
+        if (!variationModalOpened) {
+          toggleWishlist([]);
+          closeMiniWishlist();
+        }
+      };
 
       return (
         <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-50 p-4 max-h-96 overflow-y-auto">
@@ -365,40 +776,53 @@
           </div>
           {wishlist.length === 0 ? (
             <p className="text-gray-600 text-sm">Your wishlist is empty.</p>
-          ) : wishlistItems.length === 0 ? (
-            <p className="text-gray-600 text-sm">Failed to load wishlist items.</p>
           ) : (
             <>
-              {wishlistItems.map((item, index) => (
-                <div key={index} className="flex items-center justify-between py-2 border-b">
-                  <div className="flex items-center space-x-3">
-                    <img src={item.image} alt={item.title} className="w-12 h-12 object-contain rounded" />
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-900 truncate w-40">{item.title}</h4>
-                      <p className="text-xs text-gray-600">
-                        UGX {item.priceUGX.toLocaleString()}
-                      </p>
-                      <p className="text-xs text-gray-600">
-                        USD {(item.priceUGX * exchangeRate).toFixed(2)}
-                      </p>
+              {wishlistItems.map((item, index) => {
+                const priceWithVatAndTransport = item.priceUGX + (item.priceUGX * vatRate) + transportFee;
+                const priceUSD = (priceWithVatAndTransport * exchangeRate).toFixed(2);
+                return (
+                  <div key={index} className="flex items-center justify-between py-2 border-b">
+                    <div className="flex items-center space-x-3">
+                      <img
+                        src={item.image || 'https://via.placeholder.com/48'}
+                        alt={item.title}
+                        className="w-12 h-12 object-contain rounded"
+                      />
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-900 truncate w-40">{item.title}</h4>
+                        {item.priceUGX > 0 && (
+                          <>
+                            <p className="text-xs text-gray-600">
+                              UGX {priceWithVatAndTransport.toLocaleString()}
+                            </p>
+                            <p className="text-xs text-gray-600">
+                              USD {priceUSD}
+                            </p>
+                          </>
+                        )}
+                      </div>
                     </div>
+                    <button
+                      onClick={() => toggleWishlist(item.title)}
+                      className="text-red-500 hover:text-red-700"
+                      aria-label={`Remove ${item.title} from wishlist`}
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
                   </div>
-                  <button
-                    onClick={() => toggleWishlist(item.title)}
-                    className="text-red-500 hover:text-red-700"
-                    aria-label="Remove item from wishlist"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4M9 7v12m6-12v12M3 7h18" />
-                    </svg>
-                  </button>
-                </div>
-              ))}
+                );
+              })}
               <button
-                onClick={closeMiniWishlist}
-                className="w-full bg-black text-white uppercase font-bold py-2 rounded-full hover:bg-white hover:text-black hover:border hover:border-black transition text-sm mt-4"
+                onClick={handleAddAllToCart}
+                disabled={wishlist.length === 0}
+                className={`w-full bg-black text-white uppercase font-bold py-2 rounded-full transition text-sm mt-4 ${
+                  wishlist.length === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white hover:text-black hover:border hover:border-black'
+                }`}
               >
-                View Wishlist
+                ADD TO CART
               </button>
             </>
           )}
@@ -406,9 +830,12 @@
       );
     };
 
-    const Header = ({ cartItemCount, wishlistCount, searchQuery, handleSearchChange, clearSearch, cart, removeFromCart, isMiniCartOpen, toggleMiniCart, closeMiniCart, openCheckoutModal, wishlist, toggleWishlist, products, isMiniWishlistOpen, toggleMiniWishlist, closeMiniWishlist }) => {
+    const Header = ({ cartItemCount, wishlistCount, searchQuery, handleSearchChange, clearSearch, cart, removeFromCart, isMiniCartOpen, toggleMiniCart, closeMiniCart, openCheckoutModal, wishlist, toggleWishlist, products, isMiniWishlistOpen, toggleMiniWishlist, closeMiniWishlist, addToCart, openVariationModal, openAddProductModal, openRemoveProductModal, categories, subcategories, setSelectedCategory, setSelectedSubcategory }) => {
       const cartRef = React.useRef(null);
       const wishlistRef = React.useRef(null);
+      const logoRef = React.useRef(null);
+      const [logoClickCount, setLogoClickCount] = React.useState(0);
+      const [wishlistClickCount, setWishlistClickCount] = React.useState(0);
 
       useOutsideClick(cartRef, () => {
         if (isMiniCartOpen) closeMiniCart();
@@ -416,6 +843,30 @@
       useOutsideClick(wishlistRef, () => {
         if (isMiniWishlistOpen) closeMiniWishlist();
       });
+
+      const handleLogoClick = () => {
+        setLogoClickCount((prev) => {
+          const newCount = prev + 1;
+          if (newCount >= 10) {
+            openAddProductModal();
+            return 0;
+          }
+          return newCount;
+        });
+      };
+
+      const handleWishlistClick = () => {
+        setWishlistClickCount((prev) => {
+          const newCount = prev + 1;
+          if (newCount >= 10) {
+            openRemoveProductModal();
+            return 0;
+          }
+          return newCount;
+        });
+        toggleMiniWishlist(!isMiniWishlistOpen);
+        if (isMiniCartOpen) closeMiniCart();
+      };
 
       const handleKeyDown = (e) => {
         if (e.key === 'Enter') {
@@ -426,8 +877,25 @@
       return (
         <header className="bg-gray-900 text-white sticky top-8 z-40">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold">aura</h1>
+            <div className="flex items-center space-x-4 relative">
+              <h1
+                ref={logoRef}
+                className="text-2xl font-bold cursor-pointer"
+                onClick={handleLogoClick}
+              >
+                aura
+              </h1>
+              {logoClickCount >= 8 && (
+                <button
+                  onClick={openAddProductModal}
+                  className="absolute -top-2 -right-2 text-yellow-400 hover:text-yellow-600"
+                  title="Add New Product"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                  </svg>
+                </button>
+              )}
             </div>
             <div className="flex-1 mx-4">
               <div className="relative">
@@ -460,13 +928,16 @@
               </div>
             </div>
             <div className="flex items-center space-x-4 relative">
+              <CategoryMenu
+                categories={categories}
+                subcategories={subcategories}
+                setSelectedCategory={setSelectedCategory}
+                setSelectedSubcategory={setSelectedSubcategory}
+              />
               <a href="#" className="hover:text-yellow-400">Account</a>
               <div className="relative" ref={wishlistRef}>
                 <button
-                  onClick={() => {
-                    toggleMiniWishlist(!isMiniWishlistOpen);
-                    if (isMiniCartOpen) closeMiniCart();
-                  }}
+                  onClick={handleWishlistClick}
                   className="hover:text-yellow-400 relative focus:outline-none"
                 >
                   Wishlist
@@ -482,6 +953,8 @@
                     toggleWishlist={toggleWishlist}
                     products={products}
                     closeMiniWishlist={closeMiniWishlist}
+                    addToCart={addToCart}
+                    openVariationModal={openVariationModal}
                   />
                 )}
               </div>
@@ -517,7 +990,12 @@
 
     const ProductCard = ({ title, priceUGX, originalPriceUGX, discount, image, variations, openVariationModal, addToCart, toggleWishlist, isWishlisted, isOfficialStore, isRefurbished, isGlobal, isFreeShipping }) => {
       const exchangeRate = 0.00027;
-      const priceUSD = (priceUGX * exchangeRate).toFixed(2);
+      const vatRate = 0.18;
+      const transportFee = 9000;
+
+      const priceWithVatAndTransport = priceUGX + (priceUGX * vatRate) + transportFee;
+      const originalPriceWithVatAndTransport = originalPriceUGX ? originalPriceUGX + (originalPriceUGX * vatRate) + transportFee : null;
+      const priceUSD = (priceWithVatAndTransport * exchangeRate).toFixed(2);
 
       return (
         <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
@@ -561,11 +1039,11 @@
             <h3 className="text-sm text-gray-900 truncate">{title}</h3>
             <div className="flex items-center justify-between mt-1">
               <p className="text-base font-semibold text-gray-900">
-                UGX {priceUGX.toLocaleString()}
+                UGX {priceWithVatAndTransport.toLocaleString()}
               </p>
-              {originalPriceUGX && (
+              {originalPriceWithVatAndTransport && (
                 <p className="text-sm text-gray-500 line-through">
-                  UGX {originalPriceUGX.toLocaleString()}
+                  UGX {originalPriceWithVatAndTransport.toLocaleString()}
                 </p>
               )}
             </div>
@@ -599,133 +1077,20 @@
       );
     };
 
-    const ProductGrid = ({ openVariationModal, addToCart, toggleWishlist, wishlist, searchQuery, products }) => {
-      const allProducts = [
-        {
-          title: "SPJ 4 Litres, Hot Air Fryer",
-          priceUGX: 999400,
-          originalPriceUGX: 1400000,
-          discount: 29,
-          image: "https://images.unsplash.com/photo-1630312481381-2d4a53a52db0?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-          isOfficialStore: true,
-          isRefurbished: false,
-          isGlobal: false,
-          isFreeShipping: true,
-          variations: []
-        },
-        {
-          title: "Apple iPad 3 16GB Wi-Fi",
-          priceUGX: 299000,
-          originalPriceUGX: 700000,
-          discount: 57,
-          image: "https://images.unsplash.com/photo-1511707171634-5f89772885ad?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-          isOfficialStore: true,
-          isRefurbished: false,
-          isGlobal: false,
-          isFreeShipping: false,
-          variations: ["16GB (1GB RAM)", "32GB (1GB RAM)", "64GB (1GB RAM)"]
-        },
-        {
-          title: "Refurbished Apple iPad 3 16GB Wi-Fi",
-          priceUGX: 199000,
-          originalPriceUGX: 500000,
-          discount: 60,
-          image: "https://images.unsplash.com/photo-1511707171634-5f89772885ad?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-          isOfficialStore: false,
-          isRefurbished: true,
-          isGlobal: false,
-          isFreeShipping: false,
-          variations: ["16GB (1GB RAM)", "32GB (1GB RAM)", "64GB (1GB RAM)"]
-        },
-        {
-          title: "Hoffmans 6 Cups Electric Coffee Maker",
-          priceUGX: 67500,
-          originalPriceUGX: 150000,
-          discount: 55,
-          image: "https://images.unsplash.com/photo-1519681393784-d120267933ba?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-          isOfficialStore: false,
-          isRefurbished: false,
-          isGlobal: false,
-          isFreeShipping: false,
-          variations: []
-        },
-        {
-          title: "Pixel 120 Litres Single Door Fridge",
-          priceUGX: 553900,
-          originalPriceUGX: 820000,
-          discount: 32,
-          image: "https://images.unsplash.com/photo-1588854337236-6889d6311493?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-          isOfficialStore: false,
-          isRefurbished: false,
-          isGlobal: true,
-          isFreeShipping: false,
-          variations: []
-        },
-        {
-          title: "Kitchen Utensils 5 Piece Set",
-          priceUGX: 19000,
-          originalPriceUGX: 60000,
-          discount: 68,
-          image: "https://images.unsplash.com/photo-1600585154343-67eb9e7e8b2e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-          isOfficialStore: false,
-          isRefurbished: false,
-          isGlobal: false,
-          isFreeShipping: false,
-          variations: ["M", "L", "XL", "XXL"]
-        },
-        {
-          title: "Smarttec 120 Litres Single Door Fridge",
-          priceUGX: 353900,
-          originalPriceUGX: 550000,
-          discount: 36,
-          image: "https://images.unsplash.com/photo-1588854337236-6889d6311493?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-          isOfficialStore: false,
-          isRefurbished: false,
-          isGlobal: true,
-          isFreeShipping: false,
-          variations: []
-        },
-        {
-          title: "Nike Air Max 90",
-          priceUGX: 134000,
-          originalPriceUGX: 167500,
-          discount: 20,
-          image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-          isOfficialStore: true,
-          isRefurbished: false,
-          isGlobal: false,
-          isFreeShipping: true,
-          variations: ["M", "L", "XL", "XXL"]
-        },
-        {
-          title: "Nike React Infinity Run",
-          priceUGX: 134000,
-          originalPriceUGX: 157647,
-          discount: 15,
-          image: "https://images.unsplash.com/photo-1600585154343-67eb9e7e8b2e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-          isOfficialStore: true,
-          isRefurbished: false,
-          isGlobal: false,
-          isFreeShipping: true,
-          variations: ["M", "L", "XL", "XXL"]
-        },
-        {
-          title: "Samsung 43-Inch LED Smart TV",
-          priceUGX: 1200000,
-          originalPriceUGX: 1500000,
-          discount: 20,
-          image: "https://images.unsplash.com/photo-1593787816604-68e6e2527229?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-          isOfficialStore: true,
-          isRefurbished: false,
-          isGlobal: false,
-          isFreeShipping: true,
-          variations: []
+    const ProductGrid = ({ openVariationModal, addToCart, toggleWishlist, wishlist, searchQuery, products, selectedCategory, selectedSubcategory }) => {
+      const filteredProducts = (Array.isArray(products.current) ? products.current : []).filter((product) => {
+        let matches = true;
+        if (selectedCategory) {
+          matches = matches && product.category === selectedCategory;
         }
-      ];
-
-      const filteredProducts = allProducts.filter((product) =>
-        product.title.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+        if (selectedSubcategory) {
+          matches = matches && product.subcategory === selectedSubcategory;
+        }
+        if (searchQuery) {
+          matches = matches && product.title.toLowerCase().includes(searchQuery.toLowerCase());
+        }
+        return matches;
+      });
 
       return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -742,8 +1107,8 @@
                 />
               ))
             ) : (
-              <p className="text-gray-600 text-center col-span-full">
-                No products found matching your search.
+              <p className="text-gray-600 text-center col-span-full text-lg font-medium">
+                COMING SOON
               </p>
             )}
           </div>
@@ -759,7 +1124,228 @@
       const [isMiniWishlistOpen, setIsMiniWishlistOpen] = React.useState(false);
       const [variationModalProduct, setVariationModalProduct] = React.useState(null);
       const [isCheckoutModalOpen, setIsCheckoutModalOpen] = React.useState(false);
+      const [isAddProductModalOpen, setIsAddProductModalOpen] = React.useState(false);
+      const [isRemoveProductModalOpen, setIsRemoveProductModalOpen] = React.useState(false);
+      const [selectedCategory, setSelectedCategory] = React.useState(null);
+      const [selectedSubcategory, setSelectedSubcategory] = React.useState(null);
       const productsRef = React.useRef([]);
+
+      React.useEffect(() => {
+        productsRef.current = [
+          {
+            title: "SPJ 4 Litres, Hot Air Fryer",
+            priceUGX: 999400,
+            originalPriceUGX: 1400000,
+            discount: 29,
+            image: "https://images.unsplash.com/photo-1630312481381-2d4a53a52db0?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
+            isOfficialStore: true,
+            isRefurbished: false,
+            isGlobal: false,
+            isFreeShipping: true,
+            variations: [],
+            category: "Home & Kitchen",
+            subcategory: "Appliances"
+          },
+          {
+            title: "Apple iPad 3 16GB Wi-Fi",
+            priceUGX: 299000,
+            originalPriceUGX: 700000,
+            discount: 57,
+            image: "https://images.unsplash.com/photo-1511707171634-5f89772885ad?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
+            isOfficialStore: true,
+            isRefurbished: false,
+            isGlobal: false,
+            isFreeShipping: false,
+            variations: ["16GB (1GB RAM)", "32GB (1GB RAM)", "64GB (1GB RAM)"],
+            category: "Electronics",
+            subcategory: "Tablets"
+          },
+          {
+            title: "Floral Summer Dress",
+            priceUGX: 120000,
+            originalPriceUGX: 150000,
+            discount: 20,
+            image: "https://images.unsplash.com/photo-1594633312681-47ce7a3f956b?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
+            isOfficialStore: false,
+            isRefurbished: false,
+            isGlobal: false,
+            isFreeShipping: true,
+            variations: ["S", "M", "L", "XL"],
+            category: "Women Clothing",
+            subcategory: "Dresses"
+          },
+          {
+            title: "Curve Denim Jacket",
+            priceUGX: 180000,
+            originalPriceUGX: 220000,
+            discount: 18,
+            image: "https://images.unsplash.com/photo-1608063615781-e2dce9033eb9?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
+            isOfficialStore: false,
+            isRefurbished: false,
+            isGlobal: false,
+            isFreeShipping: true,
+            variations: ["L", "XL", "XXL"],
+            category: "Curve",
+            subcategory: "Jackets & Coats"
+          },
+          {
+            title: "Nike Air Max 90",
+            priceUGX: 134000,
+            originalPriceUGX: 167500,
+            discount: 20,
+            image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
+            isOfficialStore: true,
+            isRefurbished: false,
+            isGlobal: false,
+            isFreeShipping: true,
+            variations: ["M", "L", "XL", "XXL"],
+            category: "Shoes",
+            subcategory: "Sneakers"
+          },
+          {
+            title: "Gold Necklace",
+            priceUGX: 250000,
+            originalPriceUGX: 300000,
+            discount: 17,
+            image: "https://images.unsplash.com/photo-1611652022419-a6b3c9319c5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
+            isOfficialStore: false,
+            isRefurbished: false,
+            isGlobal: true,
+            isFreeShipping: false,
+            variations: [],
+            category: "Jewelry & Accessories",
+            subcategory: "Necklaces"
+          },
+          {
+            title: "Men's Casual Shirt",
+            priceUGX: 100000,
+            originalPriceUGX: 130000,
+            discount: 23,
+            image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
+            isOfficialStore: false,
+            isRefurbished: false,
+            isGlobal: false,
+            isFreeShipping: true,
+            variations: ["M", "L", "XL"],
+            category: "Men Clothing",
+            subcategory: "Shirts"
+          },
+          {
+            title: "Kids Sneakers",
+            priceUGX: 80000,
+            originalPriceUGX: 100000,
+            discount: 20,
+            image: "https://images.unsplash.com/photo-1597045566897-1a5c4d25a6c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
+            isOfficialStore: true,
+            isRefurbished: false,
+            isGlobal: false,
+            isFreeShipping: true,
+            variations: ["S", "M", "L"],
+            category: "Kids",
+            subcategory: "Footwear"
+          }
+        ];
+      }, []);
+
+      const categories = [
+        "New In",
+        "Sale",
+        "Women Clothing",
+        "Beachwear",
+        "Kids",
+        "Curve",
+        "Men Clothing",
+        "Shoes",
+        "Underwear & Sleepwear",
+        "Home & Kitchen",
+        "Jewelry & Accessories",
+        "Electronics",
+        "Sports"
+      ];
+
+      const subcategories = {
+        "Women Clothing": [
+          { name: "Dresses", image: "https://via.placeholder.com/96" },
+          { name: "Tops", image: "https://via.placeholder.com/96" },
+          { name: "Tank Tops & Camis", image: "https://via.placeholder.com/96" },
+          { name: "Blouses", image: "https://via.placeholder.com/96" },
+          { name: "T-shirts", image: "https://via.placeholder.com/96" },
+          { name: "Denim", image: "https://via.placeholder.com/96" },
+          { name: "Co-ords", image: "https://via.placeholder.com/96" },
+          { name: "Bottoms", image: "https://via.placeholder.com/96" },
+          { name: "Beachwear", image: "https://via.placeholder.com/96" }
+        ],
+        "Beachwear": [
+          { name: "Swimsuits", image: "https://via.placeholder.com/96" },
+          { name: "Cover-ups", image: "https://via.placeholder.com/96" },
+          { name: "Beach Bags", image: "https://via.placeholder.com/96" }
+        ],
+        "Kids": [
+          { name: "Clothing", image: "https://via.placeholder.com/96" },
+          { name: "Footwear", image: "https://via.placeholder.com/96" },
+          { name: "Accessories", image: "https://via.placeholder.com/96" }
+        ],
+        "Curve": [
+          { name: "Dresses", image: "https://via.placeholder.com/96" },
+          { name: "Tops", image: "https://via.placeholder.com/96" },
+          { name: "Blouses", image: "https://via.placeholder.com/96" },
+          { name: "T-shirts", image: "https://via.placeholder.com/96" },
+          { name: "Bottoms", image: "https://via.placeholder.com/96" },
+          { name: "Sweatshirts", image: "https://via.placeholder.com/96" },
+          { name: "Jackets & Coats", image: "https://via.placeholder.com/96" },
+          { name: "Beachwear", image: "https://via.placeholder.com/96" },
+          { name: "Jumpsuits", image: "https://via.placeholder.com/96" }
+        ],
+        "Men Clothing": [
+          { name: "Shirts", image: "https://via.placeholder.com/96" },
+          { name: "T-shirts", image: "https://via.placeholder.com/96" },
+          { name: "Pants", image: "https://via.placeholder.com/96" },
+          { name: "Jackets", image: "https://via.placeholder.com/96" }
+        ],
+        "Shoes": [
+          { name: "Sneakers", image: "https://via.placeholder.com/96" },
+          { name: "Boots", image: "https://via.placeholder.com/96" },
+          { name: "Sandals", image: "https://via.placeholder.com/96" },
+          { name: "Heels", image: "https://via.placeholder.com/96" }
+        ],
+        "Underwear & Sleepwear": [
+          { name: "Underwear", image: "https://via.placeholder.com/96" },
+          { name: "Sleepwear", image: "https://via.placeholder.com/96" }
+        ],
+        "Home & Kitchen": [
+          { name: "Appliances", image: "https://via.placeholder.com/96" },
+          { name: "Cookware", image: "https://via.placeholder.com/96" },
+          { name: "Utensils", image: "https://via.placeholder.com/96" },
+          { name: "Storage", image: "https://via.placeholder.com/96" }
+        ],
+        "Jewelry & Accessories": [
+          { name: "Necklaces", image: "https://via.placeholder.com/96" },
+          { name: "Earrings", image: "https://via.placeholder.com/96" },
+          { name: "Bracelets", image: "https://via.placeholder.com/96" },
+          { name: "Bags", image: "https://via.placeholder.com/96" }
+        ],
+        "Electronics": [
+          { name: "Tablets", image: "https://via.placeholder.com/96" },
+          { name: "Phones", image: "https://via.placeholder.com/96" },
+          { name: "Televisions", image: "https://via.placeholder.com/96" },
+          { name: "Audio", image: "https://via.placeholder.com/96" },
+          { name: "Accessories", image: "https://via.placeholder.com/96" }
+        ],
+        "New In": [
+          { name: "Featured", image: "https://via.placeholder.com/96" },
+          { name: "Trending", image: "https://via.placeholder.com/96" }
+        ],
+        "Sale": [
+          { name: "Clearance", image: "https://via.placeholder.com/96" },
+          { name: "Discounts", image: "https://via.placeholder.com/96" }
+        ],
+        "Sports": [
+          { name: "Activewear", image: "https://via.placeholder.com/96" },
+          { name: "Sports Shoes", image: "https://via.placeholder.com/96" },
+          { name: "Equipment", image: "https://via.placeholder.com/96" },
+          { name: "Accessories", image: "https://via.placeholder.com/96" }
+        ]
+      };
 
       const handleSearchChange = debounce((value) => {
         setSearchQuery(value);
@@ -788,11 +1374,15 @@
       };
 
       const toggleWishlist = (title) => {
-        setWishlist((prevWishlist) =>
-          prevWishlist.includes(title)
-            ? prevWishlist.filter((item) => item !== title)
-            : [...prevWishlist, title]
-        );
+        if (Array.isArray(title)) {
+          setWishlist([]);
+        } else {
+          setWishlist((prevWishlist) =>
+            prevWishlist.includes(title)
+              ? prevWishlist.filter((item) => item !== title)
+              : [...prevWishlist, title]
+          );
+        }
       };
 
       const toggleMiniCart = (isOpen) => {
@@ -828,8 +1418,32 @@
         setIsCheckoutModalOpen(false);
       };
 
-      const handleCheckoutConfirm = ({ name, address, phone }) => {
-        console.log("Order confirmed:", { name, address, phone, cart });
+      const openAddProductModal = () => {
+        setIsAddProductModalOpen(true);
+      };
+
+      const closeAddProductModal = () => {
+        setIsAddProductModalOpen(false);
+      };
+
+      const openRemoveProductModal = () => {
+        setIsRemoveProductModalOpen(true);
+      };
+
+      const closeRemoveProductModal = () => {
+        setIsRemoveProductModalOpen(false);
+      };
+
+      const handleAddProduct = (product) => {
+        productsRef.current = [...productsRef.current, product];
+      };
+
+      const handleRemoveProduct = (title) => {
+        productsRef.current = productsRef.current.filter((product) => product.title !== title);
+      };
+
+      const handleCheckoutConfirm = () => {
+        console.log("Order confirmed:", { cart });
         setCart([]);
       };
 
@@ -858,15 +1472,44 @@
               isMiniWishlistOpen={isMiniWishlistOpen}
               toggleMiniWishlist={toggleMiniWishlist}
               closeMiniWishlist={closeMiniWishlist}
+              addToCart={addToCart}
+              openVariationModal={openVariationModal}
+              openAddProductModal={openAddProductModal}
+              openRemoveProductModal={openRemoveProductModal}
+              categories={categories}
+              subcategories={subcategories}
+              setSelectedCategory={setSelectedCategory}
+              setSelectedSubcategory={setSelectedSubcategory}
             />
-            <ProductGrid
+            <CategoryFilters
+              categories={categories}
+              subcategories={subcategories}
+              selectedCategory={selectedCategory}
+              selectedSubcategory={selectedSubcategory}
+              setSelectedCategory={setSelectedCategory}
+              setSelectedSubcategory={setSelectedSubcategory}
+            />
+            <SaleProductsSection
+              products={productsRef}
               openVariationModal={openVariationModal}
               addToCart={addToCart}
               toggleWishlist={toggleWishlist}
               wishlist={wishlist}
-              searchQuery={searchQuery}
-              products={productsRef}
             />
+            <div className="flex">
+              <div className="flex-1">
+                <ProductGrid
+                  openVariationModal={openVariationModal}
+                  addToCart={addToCart}
+                  toggleWishlist={toggleWishlist}
+                  wishlist={wishlist}
+                  searchQuery={searchQuery}
+                  products={productsRef}
+                  selectedCategory={selectedCategory}
+                  selectedSubcategory={selectedSubcategory}
+                />
+              </div>
+            </div>
             {variationModalProduct && (
               <VariationModal
                 product={variationModalProduct}
@@ -879,6 +1522,19 @@
                 cart={cart}
                 onConfirm={handleCheckoutConfirm}
                 onClose={closeCheckoutModal}
+              />
+            )}
+            {isAddProductModalOpen && (
+              <AddProductModal
+                onAddProduct={handleAddProduct}
+                onClose={closeAddProductModal}
+              />
+            )}
+            {isRemoveProductModalOpen && (
+              <RemoveProductModal
+                products={productsRef.current}
+                onRemoveProduct={handleRemoveProduct}
+                onClose={closeRemoveProductModal}
               />
             )}
           </div>
