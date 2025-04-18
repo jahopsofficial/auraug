@@ -25,9 +25,7 @@
     function useOutsideClick(ref, callback) {
       React.useEffect(() => {
         const handleClickOutside = (event) => {
-          // Only trigger callback if it's a true click or tap (not a scroll or touch artifact)
           if (ref.current && !ref.current.contains(event.target) && (event.type === 'mousedown' || event.type === 'touchstart')) {
-            // Ensure the click/tap is not on scrollable content
             const isScrollClick = event.target.closest('[style*="overflow-y: auto"]');
             if (!isScrollClick) {
               callback();
@@ -139,16 +137,9 @@
       const [phone, setPhone] = React.useState("");
       const [error, setError] = React.useState("");
       const modalRef = React.useRef(null);
-      const backdropRef = React.useRef(null);
       const exchangeRate = 0.00027;
 
       useOutsideClick(modalRef, onClose);
-
-      const handleBackdropClick = (event) => {
-        if (event.target === backdropRef.current) {
-          onClose();
-        }
-      };
 
       const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
       const vat = subtotal * 0.18;
@@ -165,104 +156,129 @@
           return;
         }
         setError("");
+
+        // Generate minimalist invoice message
+        let invoice = `📋 *aura Invoice*\n`;
+        invoice += `===\n\n`;
+        invoice += `*Name*: ${name}\n`;
+        invoice += `*Address*: ${address}\n`;
+        invoice += `*Phone*: ${phone}\n\n`;
+        invoice += `=== Order ===\n`;
+        cart.forEach((item, index) => {
+          const itemTotal = item.price * item.quantity;
+          const itemTotalUSD = (itemTotal * exchangeRate).toFixed(2);
+          invoice += `${index + 1}. *${item.title}* `;
+          if (item.size) invoice += `(${item.size}) `;
+          invoice += `x${item.quantity} - UGX ${itemTotal.toLocaleString()} (USD ${itemTotalUSD})\n`;
+          invoice += `-\n`;
+        });
+        invoice += `\n=== Summary ===\n`;
+        invoice += `Subtotal....UGX ${subtotal.toLocaleString()} (USD ${subtotalUSD})\n`;
+        invoice += `VAT (18%)...UGX ${vat.toLocaleString()} (USD ${vatUSD})\n`;
+        invoice += `Delivery....UGX ${deliveryFee.toLocaleString()} (USD ${deliveryFeeUSD})\n`;
+        invoice += `*Total*......*UGX ${total.toLocaleString()}* (USD ${totalUSD})\n`;
+        invoice += `===\n`;
+        invoice += `Thank you for your order! Please confirm receipt. ✅\n`;
+        invoice += `aura - Premium Shopping`;
+
+        // URL-encode the message
+        const encodedMessage = encodeURIComponent(invoice);
+        const whatsappUrl = `https://wa.me/256758468490?text=${encodedMessage}`;
+
+        // Open WhatsApp in a new tab/window
+        window.open(whatsappUrl, '_blank');
+
+        // Call onConfirm and clear cart
         onConfirm({ name, address, phone });
         onClose();
       };
 
       return (
-        <div
-          ref={backdropRef}
-          className="fixed inset-0 bg-black bg-opacity-50 z-50"
-          onClick={handleBackdropClick}
-        >
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div
-            className="fixed top-[80px] left-1/2 -translate-x-1/2 w-full"
+            ref={modalRef}
+            className="bg-white rounded-lg shadow-lg p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto"
           >
-            <div
-              ref={modalRef}
-              className="bg-white rounded-lg shadow-lg p-8 max-w-4xl w-full min-h-fit max-h-[calc(100vh-100px)] overflow-y-auto overscroll-contain"
-            >
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Enter Delivery Details</h3>
-              <div className="space-y-2">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Full Name</label>
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    placeholder="John Doe"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Delivery Address</label>
-                  <textarea
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    placeholder="123 Main St, Kampala"
-                    rows="4"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Phone Number</label>
-                  <input
-                    type="text"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    placeholder="+256 123 456 789"
-                  />
-                </div>
-                {error && <p className="text-red-500 text-sm">{error}</p>}
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">Enter Delivery Details</h3>
+            <div className="space-y-2">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Full Name</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="John Doe"
+                />
               </div>
-              <div className="mt-4">
-                <h4 className="text-sm font-medium text-gray-900 mb-1">Order Summary</h4>
-                <div className="space-y-1">
-                  <div className="flex justify-between text-sm">
-                    <span>Subtotal:</span>
-                    <div className="text-right">
-                      <span>UGX {subtotal.toLocaleString()}</span>
-                      <p className="text-xs text-gray-600">USD {subtotalUSD}</p>
-                    </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Delivery Address</label>
+                <textarea
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="123 Main St, Kampala"
+                  rows="3"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Phone Number</label>
+                <input
+                  type="text"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="+256 123 456 789"
+                />
+              </div>
+              {error && <p className="text-red-500 text-sm">{error}</p>}
+            </div>
+            <div className="mt-4">
+              <h4 className="text-sm font-medium text-gray-900 mb-1">Order Summary</h4>
+              <div className="space-y-1">
+                <div className="flex justify-between text-sm">
+                  <span>Subtotal:</span>
+                  <div className="text-right">
+                    <span>UGX {subtotal.toLocaleString()}</span>
+                    <p className="text-xs text-gray-600">USD {subtotalUSD}</p>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span>VAT (18%):</span>
-                    <div className="text-right">
-                      <span>UGX {vat.toLocaleString()}</span>
-                      <p className="text-xs text-gray-600">USD {vatUSD}</p>
-                    </div>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>VAT (18%):</span>
+                  <div className="text-right">
+                    <span>UGX {vat.toLocaleString()}</span>
+                    <p className="text-xs text-gray-600">USD {vatUSD}</p>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span>Delivery Fee:</span>
-                    <div className="text-right">
-                      <span>UGX {deliveryFee.toLocaleString()}</span>
-                      <p className="text-xs text-gray-600">USD {deliveryFeeUSD}</p>
-                    </div>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Delivery Fee:</span>
+                  <div className="text-right">
+                    <span>UGX {deliveryFee.toLocaleString()}</span>
+                    <p className="text-xs text-gray-600">USD {deliveryFeeUSD}</p>
                   </div>
-                  <div className="flex justify-between text-lg font-semibold border-t pt-1">
-                    <span>Total:</span>
-                    <div className="text-right">
-                      <span>UGX {total.toLocaleString()}</span>
-                      <p className="text-xs text-gray-600">USD {totalUSD}</p>
-                    </div>
+                </div>
+                <div className="flex justify-between text-lg font-semibold border-t pt-1">
+                  <span>Total:</span>
+                  <div className="text-right">
+                    <span>UGX {total.toLocaleString()}</span>
+                    <p className="text-xs text-gray-600">USD {totalUSD}</p>
                   </div>
                 </div>
               </div>
-              <div className="flex justify-end space-x-4 mt-4">
-                <button
-                  onClick={onClose}
-                  className="bg-gray-300 text-gray-900 uppercase font-bold py-2 px-4 rounded-full hover:bg-gray-400 transition text-sm"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleConfirm}
-                  className="bg-purple-500 text-white uppercase font-bold py-2 px-4 rounded-full hover:bg-purple-600 transition text-sm"
-                >
-                  PAY NOW
-                </button>
-              </div>
+            </div>
+            <div className="flex justify-end space-x-4 mt-4">
+              <button
+                onClick={onClose}
+                className="bg-gray-300 text-gray-900 uppercase font-bold py-2 px-4 rounded-full hover:bg-gray-400 transition text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirm}
+                className="bg-purple-500 text-white uppercase font-bold py-2 px-4 rounded-full hover:bg-purple-600 transition text-sm"
+              >
+                PAY NOW
+              </button>
             </div>
           </div>
         </div>
@@ -499,20 +515,6 @@
       );
     };
 
-    const NavBar = () => {
-      return (
-        <nav className="bg-gray-800 text-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-end py-3">
-              <div>
-                <a href="#" className="text-yellow-400 font-semibold">Today's Deals</a>
-              </div>
-            </div>
-          </div>
-        </nav>
-      );
-    };
-
     const ProductCard = ({ title, priceUGX, originalPriceUGX, discount, image, variations, openVariationModal, addToCart, toggleWishlist, isWishlisted, isOfficialStore, isRefurbished, isGlobal, isFreeShipping }) => {
       const exchangeRate = 0.00027;
       const priceUSD = (priceUGX * exchangeRate).toFixed(2);
@@ -701,4 +703,191 @@
           originalPriceUGX: 157647,
           discount: 15,
           image: "https://images.unsplash.com/photo-1600585154343-67eb9e7e8b2e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-          isOfficialStore: true
+          isOfficialStore: true,
+          isRefurbished: false,
+          isGlobal: false,
+          isFreeShipping: true,
+          variations: ["M", "L", "XL", "XXL"]
+        },
+        {
+          title: "Samsung 43-Inch LED Smart TV",
+          priceUGX: 1200000,
+          originalPriceUGX: 1500000,
+          discount: 20,
+          image: "https://images.unsplash.com/photo-1593787816604-68e6e2527229?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
+          isOfficialStore: true,
+          isRefurbished: false,
+          isGlobal: false,
+          isFreeShipping: true,
+          variations: []
+        }
+      ];
+
+      const filteredProducts = allProducts.filter((product) =>
+        product.title.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+
+      return (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {filteredProducts.length > 0 ? (
+              filteredProducts.map((product, index) => (
+                <ProductCard
+                  key={index}
+                  {...product}
+                  openVariationModal={openVariationModal}
+                  addToCart={addToCart}
+                  toggleWishlist={toggleWishlist}
+                  isWishlisted={wishlist.includes(product.title)}
+                />
+              ))
+            ) : (
+              <p className="text-gray-600 text-center col-span-full">
+                No products found matching your search.
+              </p>
+            )}
+          </div>
+        </div>
+      );
+    };
+
+    const App = () => {
+      const [cart, setCart] = React.useState([]);
+      const [wishlist, setWishlist] = React.useState([]);
+      const [searchQuery, setSearchQuery] = React.useState("");
+      const [isMiniCartOpen, setIsMiniCartOpen] = React.useState(false);
+      const [isMiniWishlistOpen, setIsMiniWishlistOpen] = React.useState(false);
+      const [variationModalProduct, setVariationModalProduct] = React.useState(null);
+      const [isCheckoutModalOpen, setIsCheckoutModalOpen] = React.useState(false);
+      const productsRef = React.useRef([]);
+
+      const handleSearchChange = debounce((value) => {
+        setSearchQuery(value);
+      }, 300);
+
+      const clearSearch = () => {
+        setSearchQuery("");
+      };
+
+      const addToCart = (product) => {
+        setCart((prevCart) => {
+          const existingItemIndex = prevCart.findIndex(
+            (item) => item.title === product.title && item.size === product.size
+          );
+          if (existingItemIndex >= 0) {
+            const newCart = [...prevCart];
+            newCart[existingItemIndex].quantity += 1;
+            return newCart;
+          }
+          return [...prevCart, { ...product, quantity: 1 }];
+        });
+      };
+
+      const removeFromCart = (index) => {
+        setCart((prevCart) => prevCart.filter((_, i) => i !== index));
+      };
+
+      const toggleWishlist = (title) => {
+        setWishlist((prevWishlist) =>
+          prevWishlist.includes(title)
+            ? prevWishlist.filter((item) => item !== title)
+            : [...prevWishlist, title]
+        );
+      };
+
+      const toggleMiniCart = (isOpen) => {
+        setIsMiniCartOpen(isOpen);
+      };
+
+      const closeMiniCart = () => {
+        setIsMiniCartOpen(false);
+      };
+
+      const toggleMiniWishlist = (isOpen) => {
+        setIsMiniWishlistOpen(isOpen);
+      };
+
+      const closeMiniWishlist = () => {
+        setIsMiniWishlistOpen(false);
+      };
+
+      const openVariationModal = (product) => {
+        setVariationModalProduct(product);
+      };
+
+      const closeVariationModal = () => {
+        setVariationModalProduct(null);
+      };
+
+      const openCheckoutModal = () => {
+        setIsCheckoutModalOpen(true);
+        closeMiniCart();
+      };
+
+      const closeCheckoutModal = () => {
+        setIsCheckoutModalOpen(false);
+      };
+
+      const handleCheckoutConfirm = ({ name, address, phone }) => {
+        console.log("Order confirmed:", { name, address, phone, cart });
+        setCart([]);
+      };
+
+      const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+      const wishlistCount = wishlist.length;
+
+      return (
+        <ErrorBoundary>
+          <div className="min-h-screen bg-gray-100">
+            <FreeShippingBanner />
+            <Header
+              cartItemCount={cartItemCount}
+              wishlistCount={wishlistCount}
+              searchQuery={searchQuery}
+              handleSearchChange={handleSearchChange}
+              clearSearch={clearSearch}
+              cart={cart}
+              removeFromCart={removeFromCart}
+              isMiniCartOpen={isMiniCartOpen}
+              toggleMiniCart={toggleMiniCart}
+              closeMiniCart={closeMiniCart}
+              openCheckoutModal={openCheckoutModal}
+              wishlist={wishlist}
+              toggleWishlist={toggleWishlist}
+              products={productsRef}
+              isMiniWishlistOpen={isMiniWishlistOpen}
+              toggleMiniWishlist={toggleMiniWishlist}
+              closeMiniWishlist={closeMiniWishlist}
+            />
+            <ProductGrid
+              openVariationModal={openVariationModal}
+              addToCart={addToCart}
+              toggleWishlist={toggleWishlist}
+              wishlist={wishlist}
+              searchQuery={searchQuery}
+              products={productsRef}
+            />
+            {variationModalProduct && (
+              <VariationModal
+                product={variationModalProduct}
+                onAddToCart={addToCart}
+                onClose={closeVariationModal}
+              />
+            )}
+            {isCheckoutModalOpen && (
+              <CheckoutModal
+                cart={cart}
+                onConfirm={handleCheckoutConfirm}
+                onClose={closeCheckoutModal}
+              />
+            )}
+          </div>
+        </ErrorBoundary>
+      );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
