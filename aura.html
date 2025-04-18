@@ -25,13 +25,20 @@
     function useOutsideClick(ref, callback) {
       React.useEffect(() => {
         const handleClickOutside = (event) => {
-          if (ref.current && !ref.current.contains(event.target)) {
-            callback();
+          // Only trigger callback if it's a true click or tap (not a scroll or touch artifact)
+          if (ref.current && !ref.current.contains(event.target) && (event.type === 'mousedown' || event.type === 'touchstart')) {
+            // Ensure the click/tap is not on scrollable content
+            const isScrollClick = event.target.closest('[style*="overflow-y: auto"]');
+            if (!isScrollClick) {
+              callback();
+            }
           }
         };
         document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
         return () => {
           document.removeEventListener('mousedown', handleClickOutside);
+          document.removeEventListener('touchstart', handleClickOutside);
         };
       }, [ref, callback]);
     }
@@ -132,9 +139,16 @@
       const [phone, setPhone] = React.useState("");
       const [error, setError] = React.useState("");
       const modalRef = React.useRef(null);
+      const backdropRef = React.useRef(null);
       const exchangeRate = 0.00027;
 
       useOutsideClick(modalRef, onClose);
+
+      const handleBackdropClick = (event) => {
+        if (event.target === backdropRef.current) {
+          onClose();
+        }
+      };
 
       const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
       const vat = subtotal * 0.18;
@@ -156,88 +170,99 @@
       };
 
       return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div ref={modalRef} className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Enter Delivery Details</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Full Name</label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  placeholder="John Doe"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Delivery Address</label>
-                <textarea
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  placeholder="123 Main St, Kampala"
-                  rows="4"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Phone Number</label>
-                <input
-                  type="text"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  placeholder="+256 123 456 789"
-                />
-              </div>
-              {error && <p className="text-red-500 text-sm">{error}</p>}
-            </div>
-            <div className="mt-6">
-              <h4 className="text-sm font-medium text-gray-900 mb-2">Order Summary</h4>
+        <div
+          ref={backdropRef}
+          className="fixed inset-0 bg-black bg-opacity-50 z-50"
+          onClick={handleBackdropClick}
+        >
+          <div
+            className="fixed top-[80px] left-1/2 -translate-x-1/2 w-full"
+          >
+            <div
+              ref={modalRef}
+              className="bg-white rounded-lg shadow-lg p-8 max-w-4xl w-full min-h-fit max-h-[calc(100vh-100px)] overflow-y-auto overscroll-contain"
+            >
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Enter Delivery Details</h3>
               <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Subtotal:</span>
-                  <div className="text-right">
-                    <span>UGX {subtotal.toLocaleString()}</span>
-                    <p className="text-xs text-gray-600">USD {subtotalUSD}</p>
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Full Name</label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="John Doe"
+                  />
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span>VAT (18%):</span>
-                  <div className="text-right">
-                    <span>UGX {vat.toLocaleString()}</span>
-                    <p className="text-xs text-gray-600">USD {vatUSD}</p>
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Delivery Address</label>
+                  <textarea
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="123 Main St, Kampala"
+                    rows="4"
+                  />
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span>Delivery Fee:</span>
-                  <div className="text-right">
-                    <span>UGX {deliveryFee.toLocaleString()}</span>
-                    <p className="text-xs text-gray-600">USD {deliveryFeeUSD}</p>
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Phone Number</label>
+                  <input
+                    type="text"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="+256 123 456 789"
+                  />
                 </div>
-                <div className="flex justify-between text-lg font-semibold border-t pt-2">
-                  <span>Total:</span>
-                  <div className="text-right">
-                    <span>UGX {total.toLocaleString()}</span>
-                    <p className="text-xs text-gray-600">USD {totalUSD}</p>
+                {error && <p className="text-red-500 text-sm">{error}</p>}
+              </div>
+              <div className="mt-4">
+                <h4 className="text-sm font-medium text-gray-900 mb-1">Order Summary</h4>
+                <div className="space-y-1">
+                  <div className="flex justify-between text-sm">
+                    <span>Subtotal:</span>
+                    <div className="text-right">
+                      <span>UGX {subtotal.toLocaleString()}</span>
+                      <p className="text-xs text-gray-600">USD {subtotalUSD}</p>
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>VAT (18%):</span>
+                    <div className="text-right">
+                      <span>UGX {vat.toLocaleString()}</span>
+                      <p className="text-xs text-gray-600">USD {vatUSD}</p>
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Delivery Fee:</span>
+                    <div className="text-right">
+                      <span>UGX {deliveryFee.toLocaleString()}</span>
+                      <p className="text-xs text-gray-600">USD {deliveryFeeUSD}</p>
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-lg font-semibold border-t pt-1">
+                    <span>Total:</span>
+                    <div className="text-right">
+                      <span>UGX {total.toLocaleString()}</span>
+                      <p className="text-xs text-gray-600">USD {totalUSD}</p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div className="flex justify-end space-x-4 mt-6">
-              <button
-                onClick={onClose}
-                className="bg-gray-300 text-gray-900 uppercase font-bold py-2 px-4 rounded-full hover:bg-gray-400 transition text-sm"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleConfirm}
-                className="bg-purple-500 text-white uppercase font-bold py-2 px-4 rounded-full hover:bg-purple-600 transition text-sm"
-              >
-                Confirm Order
-              </button>
+              <div className="flex justify-end space-x-4 mt-4">
+                <button
+                  onClick={onClose}
+                  className="bg-gray-300 text-gray-900 uppercase font-bold py-2 px-4 rounded-full hover:bg-gray-400 transition text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirm}
+                  className="bg-purple-500 text-white uppercase font-bold py-2 px-4 rounded-full hover:bg-purple-600 transition text-sm"
+                >
+                  PAY NOW
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -676,606 +701,4 @@
           originalPriceUGX: 157647,
           discount: 15,
           image: "https://images.unsplash.com/photo-1600585154343-67eb9e7e8b2e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-          isOfficialStore: true,
-          isRefurbished: false,
-          isGlobal: true,
-          isFreeShipping: false,
-          variations: ["M", "L", "XL", "XXL"]
-        },
-        {
-          title: "Nike Free RN 5.0",
-          priceUGX: 134000,
-          originalPriceUGX: 178667,
-          discount: 25,
-          image: "https://images.unsplash.com/photo-1600585154343-67eb9e7e8b2e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-          isOfficialStore: false,
-          isRefurbished: false,
-          isGlobal: false,
-          isFreeShipping: false,
-          variations: ["M", "L", "XL", "XXL"]
-        }
-      ];
-
-      const dailyDeals = [
-        {
-          title: "Kitchen Utensils 5 Piece Set (Daily Deal)",
-          priceUGX: 15000,
-          originalPriceUGX: 60000,
-          discount: 75,
-          image: "https://images.unsplash.com/photo-1600585154343-67eb9e7e8b2e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-          isOfficialStore: false,
-          isRefurbished: false,
-          isGlobal: false,
-          isFreeShipping: false,
-          variations: ["M", "L", "XL", "XXL"]
-        }
-      ];
-
-      const filteredProducts = allProducts.filter((product) =>
-        product.title.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-
-      const filteredDailyDeals = dailyDeals.filter((product) =>
-        product.title.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-
-      return (
-        <div className="flex-1 py-8">
-          <div className="px-4 sm:px-6 lg:px-8 mb-6">
-            <h2 className="text-xl font-bold mb-4">Daily Deals</h2>
-            {filteredDailyDeals.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {filteredDailyDeals.map((product, index) => (
-                  <ProductCard
-                    key={`deal-${index}`}
-                    title={product.title}
-                    priceUGX={product.priceUGX}
-                    originalPriceUGX={product.originalPriceUGX}
-                    discount={product.discount}
-                    image={product.image}
-                    variations={product.variations}
-                    openVariationModal={openVariationModal}
-                    addToCart={addToCart}
-                    toggleWishlist={toggleWishlist}
-                    isWishlisted={wishlist.includes(product.title)}
-                    isOfficialStore={product.isOfficialStore}
-                    isRefurbished={product.isRefurbished}
-                    isGlobal={product.isGlobal}
-                    isFreeShipping={product.isFreeShipping}
-                  />
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-600">No daily deals match your search.</p>
-            )}
-          </div>
-
-          <div className="px-4 sm:px-6 lg:px-8 mb-6">
-            <h2 className="text-xl font-bold mb-4">Recommended for You</h2>
-            <p className="text-gray-600">Personalized recommendations coming soon!</p>
-          </div>
-
-          <h2 className="text-2xl font-bold mb-6 px-4 sm:px-6 lg:px-8">
-            {searchQuery ? `Search Results for "${searchQuery}"` : `All Products`}
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-4 sm:px-6 lg:px-8">
-            {filteredProducts.length > 0 ? (
-              filteredProducts.map((product, index) => (
-                <ProductCard
-                  key={index}
-                  title={product.title}
-                  priceUGX={product.priceUGX}
-                  originalPriceUGX={product.originalPriceUGX}
-                  discount={product.discount}
-                  image={product.image}
-                  variations={product.variations}
-                  openVariationModal={openVariationModal}
-                  addToCart={addToCart}
-                  toggleWishlist={toggleWishlist}
-                  isWishlisted={wishlist.includes(product.title)}
-                  isOfficialStore={product.isOfficialStore}
-                  isRefurbished={product.isRefurbished}
-                  isGlobal={product.isGlobal}
-                  isFreeShipping={product.isFreeShipping}
-                />
-              ))
-            ) : (
-              <p className="col-span-full text-gray-600">No products found matching your search.</p>
-            )}
-          </div>
-        </div>
-      );
-    };
-
-    const CartSummary = ({ cart, removeFromCart, updateQuantity }) => {
-      const exchangeRate = 0.00027;
-      const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-      const subtotalUSD = (subtotal * exchangeRate).toFixed(2);
-      const shippingThreshold = 1000000;
-      const shippingCost = subtotal >= shippingThreshold ? 0 : 20000;
-      const shippingCostUSD = (shippingCost * exchangeRate).toFixed(2);
-      const total = subtotal + shippingCost;
-      const totalUSD = (total * exchangeRate).toFixed(2);
-
-      const handleQuantityChange = (index, newQuantity) => {
-        if (newQuantity < 1) return;
-        updateQuantity(index, newQuantity);
-      };
-
-      if (cart.length === 0) {
-        return (
-          <div id="cart" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-white">
-            <h2 className="text-2xl font-bold mb-6">Your Cart</h2>
-            <p className="text-gray-600">Your cart is empty.</p>
-          </div>
-        );
-      }
-
-      return (
-        <div id="cart" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-white">
-          <h2 className="text-2xl font-bold mb-6">Your Cart</h2>
-          <div className="flex flex-col lg:flex-row gap-8">
-            <div className="flex-1">
-              {cart.map((item, index) => {
-                const itemUSD = (item.price * exchangeRate).toFixed(2);
-                return (
-                  <div key={index} className="flex items-center justify-between border-b py-4">
-                    <div className="flex items-center space-x-4">
-                      <img src={item.image} alt={item.title} className="w-16 h-16 object-contain rounded" />
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900">{item.title}</h3>
-                        {item.size && <p className="text-xs text-gray-600">Size: {item.size}</p>}
-                        <p className="text-gray-600">
-                          UGX {item.price.toLocaleString()}
-                        </p>
-                        <p className="text-xs text-gray-600">
-                          USD {itemUSD}
-                        </p>
-                        <div className="flex items-center mt-1">
-                          <label className="text-sm text-gray-600 mr-2">Qty:</label>
-                          <select
-                            value={item.quantity}
-                            onChange={(e) => handleQuantityChange(index, parseInt(e.target.value))}
-                            className="border rounded px-2 py-1 text-sm"
-                          >
-                            {[1, 2, 3, 4, 5].map((num) => (
-                              <option key={num} value={num}>{num}</option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => removeFromCart(index)}
-                      className="text-red-500 hover:text-red-700 text-sm"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="lg:w-1/3 bg-gray-50 p-6 rounded-lg shadow-md">
-              <h3 className="text-lg font-semibold mb-4">Order Summary</h3>
-              <div className="mb-4">
-                <p className="text-sm text-gray-600 mb-1">
-                  {subtotal >= shippingThreshold
-                    ? "Congrats! You qualify for free shipping."
-                    : `Add UGX ${(shippingThreshold - subtotal).toLocaleString()} more for free shipping`}
-                </p>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-orange-500 h-2 rounded-full"
-                    style={{ width: `${Math.min((subtotal / shippingThreshold) * 100, 100)}%` }}
-                  ></div>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Subtotal:</span>
-                  <div className="text-right">
-                    <span>UGX {subtotal.toLocaleString()}</span>
-                    <p className="text-xs text-gray-600">USD {subtotalUSD}</p>
-                  </div>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span>Estimated Shipping:</span>
-                  <div className="text-right">
-                    <span>{shippingCost === 0 ? "Free" : `UGX ${shippingCost.toLocaleString()}`}</span>
-                    {shippingCost !== 0 && (
-                      <p className="text-xs text-gray-600">USD {shippingCostUSD}</p>
-                    )}
-                  </div>
-                </div>
-                <div className="flex justify-between text-lg font-semibold border-t pt-2">
-                  <span>Total:</span>
-                  <div className="text-right">
-                    <span>UGX {total.toLocaleString()}</span>
-                    <p className="text-xs text-gray-600">USD {totalUSD}</p>
-                  </div>
-                </div>
-              </div>
-              <div className="mt-4">
-                <p className="text-sm text-gray-600">Payment Options:</p>
-                <p className="text-xs text-gray-600">Cash on Delivery, Credit/Debit Card, Mobile Money</p>
-                <p className="text-xs text-gray-600 mt-1">Buy Now, Pay Later available</p>
-              </div>
-              <div className="mt-4">
-                <p className="text-sm text-gray-600">Track your order after checkout!</p>
-              </div>
-              <div className="flex justify-center space-x-4 mt-4">
-                <span className="text-xs text-gray-600 flex items-center">
-                  <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M10 2a8 8 0 00-8 8c0 2.2 1.8 4 4 4h2v2h4v-2h2c2.2 0 4-1.8 4-4a8 8 0 00-8-8zm-2 9H6V9h2v2zm0-4H6V5h2v2zm6 4h-2V9h2v2zm0-4h-2V5h2v2z" />
-                  </svg>
-                  Secure Checkout
-                </span>
-              </div>
-              <button
-                className="w-full bg-black text-white uppercase font-bold py-3 rounded-full hover:bg-white hover:text-black hover:border hover:border-black transition mt-4"
-              >
-                Proceed to Checkout
-              </button>
-              <a
-                href="#"
-                className="block text-center text-gray-600 text-sm mt-2 hover:underline"
-              >
-                Continue Shopping
-              </a>
-            </div>
-          </div>
-        </div>
-      );
-    };
-
-    const Footer = () => {
-      return (
-        <footer className="bg-gray-900 text-white py-8">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              <div>
-                <h3 className="text-lg font-semibold">Get to Know Us</h3>
-                <ul className="mt-4 space-y-2">
-                  <li><a href="#" className="hover:text-yellow-400">About Us</a></li>
-                  <li><a href="#" className="hover:text-yellow-400">Careers</a></li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold">Make Money with Us</h3>
-                <ul className="mt-4 space-y-2">
-                  <li><a href="#" className="hover:text-yellow-400">Sell on aura</a></li>
-                  <li><a href="#" className="hover:text-yellow-400">Affiliate Program</a></li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold">Customer Service</h3>
-                <ul className="mt-4 space-y-2">
-                  <li><a href="#" className="hover:text-yellow-400">Help</a></li>
-                  <li><a href="#" className="hover:text-yellow-400">Contact Us</a></li>
-                  <li><a href="#" className="hover:text-yellow-400">Returns & Refunds</a></li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold">Payment Methods</h3>
-                <ul className="mt-4 space-y-2">
-                  <li><a href="#" className="hover:text-yellow-400">Credit Cards</a></li>
-                  <li><a href="#" className="hover:text-yellow-400">aura Points</a></li>
-                </ul>
-              </div>
-            </div>
-            <div className="mt-8 text-center">
-              <p>© 2025 aura. All rights reserved.</p>
-            </div>
-          </div>
-        </footer>
-      );
-    };
-
-    const App = () => {
-      const [cart, setCart] = React.useState([]);
-      const [wishlist, setWishlist] = React.useState([]);
-      const [searchQuery, setSearchQueryState] = React.useState("");
-      const [isMiniCartOpen, setIsMiniCartOpen] = React.useState(false);
-      const [isMiniWishlistOpen, setIsMiniWishlistOpen] = React.useState(false);
-      const [isVariationModalOpen, setIsVariationModalOpen] = React.useState(false);
-      const [isCheckoutModalOpen, setIsCheckoutModalOpen] = React.useState(false);
-      const [selectedProduct, setSelectedProduct] = React.useState(null);
-      const productsRef = React.useRef([]);
-
-      React.useEffect(() => {
-        const allProducts = [
-          {
-            title: "SPJ 4 Litres, Hot Air Fryer",
-            priceUGX: 999400,
-            originalPriceUGX: 1400000,
-            discount: 29,
-            image: "https://images.unsplash.com/photo-1630312481381-2d4a53a52db0?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-            isOfficialStore: true,
-            isRefurbished: false,
-            isGlobal: false,
-            isFreeShipping: true,
-            variations: []
-          },
-          {
-            title: "Apple iPad 3 16GB Wi-Fi",
-            priceUGX: 299000,
-            originalPriceUGX: 700000,
-            discount: 57,
-            image: "https://images.unsplash.com/photo-1511707171634-5f89772885ad?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-            isOfficialStore: true,
-            isRefurbished: false,
-            isGlobal: false,
-            isFreeShipping: false,
-            variations: ["16GB (1GB RAM)", "32GB (1GB RAM)", "64GB (1GB RAM)"]
-          },
-          {
-            title: "Refurbished Apple iPad 3 16GB Wi-Fi",
-            priceUGX: 199000,
-            originalPriceUGX: 500000,
-            discount: 60,
-            image: "https://images.unsplash.com/photo-1511707171634-5f89772885ad?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-            isOfficialStore: false,
-            isRefurbished: true,
-            isGlobal: false,
-            isFreeShipping: false,
-            variations: ["16GB (1GB RAM)", "32GB (1GB RAM)", "64GB (1GB RAM)"]
-          },
-          {
-            title: "Hoffmans 6 Cups Electric Coffee Maker",
-            priceUGX: 67500,
-            originalPriceUGX: 150000,
-            discount: 55,
-            image: "https://images.unsplash.com/photo-1519681393784-d120267933ba?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-            isOfficialStore: false,
-            isRefurbished: false,
-            isGlobal: false,
-            isFreeShipping: false,
-            variations: []
-          },
-          {
-            title: "Pixel 120 Litres Single Door Fridge",
-            priceUGX: 553900,
-            originalPriceUGX: 820000,
-            discount: 32,
-            image: "https://images.unsplash.com/photo-1588854337236-6889d6311493?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-            isOfficialStore: false,
-            isRefurbished: false,
-            isGlobal: true,
-            isFreeShipping: false,
-            variations: []
-          },
-          {
-            title: "Kitchen Utensils 5 Piece Set",
-            priceUGX: 19000,
-            originalPriceUGX: 60000,
-            discount: 68,
-            image: "https://images.unsplash.com/photo-1600585154343-67eb9e7e8b2e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-            isOfficialStore: false,
-            isRefurbished: false,
-            isGlobal: false,
-            isFreeShipping: false,
-            variations: ["M", "L", "XL", "XXL"]
-          },
-          {
-            title: "Smarttec 120 Litres Single Door Fridge",
-            priceUGX: 353900,
-            originalPriceUGX: 550000,
-            discount: 36,
-            image: "https://images.unsplash.com/photo-1588854337236-6889d6311493?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-            isOfficialStore: false,
-            isRefurbished: false,
-            isGlobal: true,
-            isFreeShipping: false,
-            variations: []
-          },
-          {
-            title: "Nike Air Max 90",
-            priceUGX: 134000,
-            originalPriceUGX: 167500,
-            discount: 20,
-            image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-            isOfficialStore: true,
-            isRefurbished: false,
-            isGlobal: false,
-            isFreeShipping: true,
-            variations: ["M", "L", "XL", "XXL"]
-          },
-          {
-            title: "Nike React Infinity Run",
-            priceUGX: 134000,
-            originalPriceUGX: 157647,
-            discount: 15,
-            image: "https://images.unsplash.com/photo-1600585154343-67eb9e7e8b2e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-            isOfficialStore: true,
-            isRefurbished: false,
-            isGlobal: true,
-            isFreeShipping: false,
-            variations: ["M", "L", "XL", "XXL"]
-          },
-          {
-            title: "Nike Free RN 5.0",
-            priceUGX: 134000,
-            originalPriceUGX: 178667,
-            discount: 25,
-            image: "https://images.unsplash.com/photo-1600585154343-67eb9e7e8b2e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-            isOfficialStore: false,
-            isRefurbished: false,
-            isGlobal: false,
-            isFreeShipping: false,
-            variations: ["M", "L", "XL", "XXL"]
-          }
-        ];
-
-        const dailyDeals = [
-          {
-            title: "Kitchen Utensils 5 Piece Set (Daily Deal)",
-            priceUGX: 15000,
-            originalPriceUGX: 60000,
-            discount: 75,
-            image: "https://images.unsplash.com/photo-1600585154343-67eb9e7e8b2e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-            isOfficialStore: false,
-            isRefurbished: false,
-            isGlobal: false,
-            isFreeShipping: false,
-            variations: ["M", "L", "XL", "XXL"]
-          }
-        ];
-
-        productsRef.current = [...allProducts, ...dailyDeals];
-      }, []);
-
-      const handleSearchChange = React.useCallback(
-        debounce((value) => {
-          setSearchQueryState(value);
-        }, 300),
-        []
-      );
-
-      const clearSearch = () => {
-        setSearchQueryState("");
-      };
-
-      const toggleMiniCart = (isOpen) => {
-        setIsMiniCartOpen(isOpen);
-      };
-
-      const toggleMiniWishlist = (isOpen) => {
-        setIsMiniWishlistOpen(isOpen);
-      };
-
-      const closeMiniCart = () => {
-        setIsMiniCartOpen(false);
-      };
-
-      const closeMiniWishlist = () => {
-        setIsMiniWishlistOpen(false);
-      };
-
-      const openCheckoutModal = () => {
-        if (cart.length === 0) return;
-        setIsCheckoutModalOpen(true);
-        closeMiniCart();
-      };
-
-      const closeCheckoutModal = () => {
-        setIsCheckoutModalOpen(false);
-      };
-
-      const confirmOrder = ({ name, address, phone }) => {
-        alert(`Order confirmed! Details: ${name}, ${address}, ${phone}`);
-        setCart([]);
-      };
-
-      const openVariationModal = (product) => {
-        setSelectedProduct(product);
-        setIsVariationModalOpen(true);
-      };
-
-      const closeVariationModal = () => {
-        setIsVariationModalOpen(false);
-        setSelectedProduct(null);
-      };
-
-      const addToCart = (product) => {
-        const { title, price, image, size } = product;
-        setCart((prevCart) => {
-          const existingItem = prevCart.find(
-            (item) => item.title === title && (!item.size || !size || item.size === size)
-          );
-          if (existingItem) {
-            return prevCart.map((item) =>
-              item.title === title && (!item.size || !size || item.size === size)
-                ? { ...item, quantity: item.quantity + 1 }
-                : item
-            );
-          }
-          return [...prevCart, { title, price, image, quantity: 1, ...(size && { size }) }];
-        });
-      };
-
-      const removeFromCart = (index) => {
-        setCart((prevCart) => prevCart.filter((_, i) => i !== index));
-      };
-
-      const updateQuantity = (index, newQuantity) => {
-        setCart((prevCart) =>
-          prevCart.map((item, i) =>
-            i === index ? { ...item, quantity: newQuantity } : item
-          )
-        );
-      };
-
-      const toggleWishlist = (productTitle) => {
-        setWishlist((prevWishlist) => {
-          if (prevWishlist.includes(productTitle)) {
-            return prevWishlist.filter((title) => title !== productTitle);
-          } else {
-            return [...prevWishlist, productTitle];
-          }
-        });
-      };
-
-      const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-      const wishlistCount = wishlist.length;
-
-      return (
-        <ErrorBoundary>
-          <div className="min-h-screen bg-gray-100">
-            <FreeShippingBanner />
-            <Header
-              cartItemCount={cartItemCount}
-              wishlistCount={wishlistCount}
-              searchQuery={searchQuery}
-              handleSearchChange={handleSearchChange}
-              clearSearch={clearSearch}
-              cart={cart}
-              removeFromCart={removeFromCart}
-              isMiniCartOpen={isMiniCartOpen}
-              toggleMiniCart={toggleMiniCart}
-              closeMiniCart={closeMiniCart}
-              openCheckoutModal={openCheckoutModal}
-              wishlist={wishlist}
-              toggleWishlist={toggleWishlist}
-              products={productsRef}
-              isMiniWishlistOpen={isMiniWishlistOpen}
-              toggleMiniWishlist={toggleMiniWishlist}
-              closeMiniWishlist={closeMiniWishlist}
-            />
-            <NavBar />
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <ProductGrid
-                openVariationModal={openVariationModal}
-                addToCart={addToCart}
-                toggleWishlist={toggleWishlist}
-                wishlist={wishlist}
-                searchQuery={searchQuery}
-                products={productsRef}
-              />
-            </div>
-            <CartSummary cart={cart} removeFromCart={removeFromCart} updateQuantity={updateQuantity} />
-            {isVariationModalOpen && selectedProduct && (
-              <VariationModal
-                product={selectedProduct}
-                onAddToCart={addToCart}
-                onClose={closeVariationModal}
-              />
-            )}
-            {isCheckoutModalOpen && (
-              <CheckoutModal
-                cart={cart}
-                onConfirm={confirmOrder}
-                onClose={closeCheckoutModal}
-              />
-            )}
-            <Footer />
-          </div>
-        </ErrorBoundary>
-      );
-    };
-
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
-  </script>
-</body>
-</html>
+          isOfficialStore: true
