@@ -44,18 +44,6 @@
       );
     };
 
-    const WelcomeBanner = () => {
-      return (
-        <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
-          <img
-            src="https://via.placeholder.com/1200x300.png?text=Gifts+for+Mother%27s+Day"
-            alt="Gifts for Mother's Day"
-            className="w-full h-auto object-cover rounded-lg"
-          />
-        </div>
-      );
-    };
-
     const MiniCart = ({ cart, removeFromCart, closeMiniCart }) => {
       const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
       const shippingThreshold = 1000000;
@@ -456,7 +444,7 @@
           priceUGX: 134000,
           originalPriceUGX: 167500,
           discount: 20,
-          image: "https://images.unsplash.com/photo-1600585154343-67eb9e7e8b2e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
+          image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
           isOfficialStore: true,
           isRefurbished: false,
           isGlobal: false,
@@ -849,7 +837,7 @@
             priceUGX: 134000,
             originalPriceUGX: 167500,
             discount: 20,
-            image: "https://images.unsplash.com/photo-1600585154343-67eb9e7e8b2e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
+            image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
             isOfficialStore: true,
             isRefurbished: false,
             isGlobal: false,
@@ -983,7 +971,6 @@
             toggleMiniWishlist={toggleMiniWishlist}
             closeMiniWishlist={closeMiniWishlist}
           />
-          <WelcomeBanner />
           <NavBar />
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <ProductGrid
