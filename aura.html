@@ -53,8 +53,8 @@
         if (this.state.hasError) {
           return (
             <div className="max-w-7xl mx-auto px-4 py-8 text-center">
-              <h2 className="text-2xl font-bold text-gray-900">Something went wrong.</h2>
-              <p className="text-gray-600 mt-2">Please refresh the page or try again later.</p>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Something went wrong.</h2>
+              <p className="text-sm sm:text-base text-gray-600 mt-2">Please refresh the page or try again later.</p>
             </div>
           );
         }
@@ -64,7 +64,7 @@
 
     const FreeShippingBanner = () => {
       return (
-        <div className="fixed top-0 w-full bg-black text-white text-sm font-bold text-center py-2 z-50">
+        <div className="fixed top-0 w-full bg-black text-white text-xs sm:text-sm font-bold text-center py-1 sm:py-2 z-50">
           FREE SHIPPING FOR ORDERS ABOVE 100,000
         </div>
       );
@@ -76,7 +76,7 @@
           <img
             src="https://i.ibb.co/twC37Tky/Exp-Storefront-CTA-Banner-DT-03-3000x400-1.jpg"
             alt="Promotional Banner"
-            className="w-full h-64 object-cover"
+            className="w-full h-48 sm:h-64 md:h-80 object-cover"
             onError={(e) => {
               e.target.src = 'https://via.placeholder.com/1200x300?text=Banner+Image+Not+Found';
             }}
@@ -104,11 +104,11 @@
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="flex items-center text-white hover:text-yellow-400 focus:outline-none"
+            className="flex items-center text-white hover:text-yellow-400 focus:outline-none text-sm sm:text-base"
           >
             Categories
             <svg
-              className={`w-4 h-4 ml-2 transform transition-transform ${isOpen ? 'rotate-180' : ''}`}
+              className={`w-4 h-4 ml-1 sm:ml-2 transform transition-transform ${isOpen ? 'rotate-180' : ''}`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -117,8 +117,8 @@
             </svg>
           </button>
           {isOpen && (
-            <div className="absolute left-0 mt-2 w-64 bg-white rounded-lg shadow-lg z-50 p-4 max-h-96 overflow-y-auto">
-              <ul className="space-y-2">
+            <div className="absolute left-0 mt-2 w-48 sm:w-64 bg-white rounded-lg shadow-lg z-50 p-3 sm:p-4 max-h-80 sm:max-h-96 overflow-y-auto">
+              <ul className="space-y-1 sm:space-y-2">
                 {safeCategories.map((category) => (
                   <li key={category}>
                     <div className="flex items-center justify-between">
@@ -128,7 +128,7 @@
                           setSelectedSubcategory(null);
                           toggleCategory(category);
                         }}
-                        className="flex-1 text-left text-sm font-bold text-gray-900 hover:text-purple-600"
+                        className="flex-1 text-left text-xs sm:text-sm font-bold text-gray-900 hover:text-purple-600"
                       >
                         {category}
                       </button>
@@ -138,7 +138,7 @@
                           className="text-gray-500 hover:text-purple-600 focus:outline-none"
                         >
                           <svg
-                            className={`w-4 h-4 transform transition-transform ${
+                            className={`w-3 h-3 sm:w-4 sm:h-4 transform transition-transform ${
                               openCategory === category ? 'rotate-90' : ''
                             }`}
                             fill="none"
@@ -151,7 +151,7 @@
                       )}
                     </div>
                     {Array.isArray(safeSubcategories[category]) && safeSubcategories[category].length > 0 && openCategory === category && (
-                      <ul className="mt-1 ml-3 space-y-1">
+                      <ul className="mt-1 ml-2 sm:ml-3 space-y-1">
                         {safeSubcategories[category].map((subcategory) => (
                           <li key={subcategory.name}>
                             <button
@@ -160,7 +160,7 @@
                                 setSelectedSubcategory(subcategory.name);
                                 setIsOpen(false);
                               }}
-                              className="text-sm text-gray-600 hover:text-purple-600"
+                              className="text-xs sm:text-sm text-gray-600 hover:text-purple-600"
                             >
                               {subcategory.name}
                             </button>
@@ -183,11 +183,11 @@
       if (!saleProducts.length) return null;
 
       return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Products on Sale</h2>
-          <div className="flex overflow-x-auto space-x-4 pb-4">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-6 sm:py-8">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">Products on Sale</h2>
+          <div className="flex overflow-x-auto space-x-3 sm:space-x-4 pb-4 snap-x snap-mandatory">
             {saleProducts.map((product, index) => (
-              <div key={index} className="flex-shrink-0 w-64">
+              <div key={index} className="flex-shrink-0 w-56 sm:w-64 snap-start">
                 <ProductCard
                   {...product}
                   openVariationModal={openVariationModal}
@@ -226,20 +226,20 @@
       }
 
       return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div ref={modalRef} className="bg-white rounded-lg shadow-lg p-4 max-w-md w-full">
-            <div className="flex items-center space-x-4 mb-4">
-              <img src={product.image || 'https://via.placeholder.com/64'} alt={product.title || 'Product'} className="w-16 h-16 object-contain rounded" />
-              <h3 className="text-lg font-semibold text-gray-900">{product.title || 'Unknown Product'}</h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-2 sm:px-0">
+          <div ref={modalRef} className="bg-white rounded-lg shadow-lg p-3 sm:p-4 max-w-sm sm:max-w-md w-full">
+            <div className="flex items-center space-x-3 sm:space-x-4 mb-3 sm:mb-4">
+              <img src={product.image || 'https://via.placeholder.com/64'} alt={product.title || 'Product'} className="w-12 h-12 sm:w-16 sm:h-16 object-contain rounded" />
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">{product.title || 'Unknown Product'}</h3>
             </div>
-            <div className="mb-4">
-              <h4 className="text-sm font-medium text-gray-900 mb-2">{isTablet ? "Select Storage & RAM" : "Select Size"}</h4>
-              <div className="flex space-x-2 flex-wrap gap-2">
+            <div className="mb-3 sm:mb-4">
+              <h4 className="text-xs sm:text-sm font-medium text-gray-900 mb-1 sm:mb-2">{isTablet ? "Select Storage & RAM" : "Select Size"}</h4>
+              <div className="flex flex-wrap gap-1 sm:gap-2">
                 {product.variations.map((size) => (
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
-                    className={`border border-gray-300 px-4 py-2 rounded-md text-sm font-medium ${
+                    className={`border border-gray-300 px-3 py-1 sm:px-4 sm:py-2 rounded-md text-xs sm:text-sm font-medium ${
                       selectedSize === size ? 'bg-purple-500 text-white' : 'bg-white text-gray-900 hover:bg-gray-100'
                     }`}
                   >
@@ -247,18 +247,18 @@
                   </button>
                 ))}
               </div>
-              {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+              {error && <p className="text-red-500 text-xs sm:text-sm mt-1 sm:mt-2">{error}</p>}
             </div>
-            <div className="flex justify-end space-x-4">
+            <div className="flex justify-end space-x-3 sm:space-x-4">
               <button
                 onClick={onClose}
-                className="bg-gray-300 text-gray-900 uppercase font-bold py-2 px-4 rounded-full hover:bg-gray-400 transition text-sm"
+                className="bg-gray-300 text-gray-900 uppercase font-bold py-1 px-3 sm:py-2 sm:px-4 rounded-full hover:bg-gray-400 transition text-xs sm:text-sm"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAddToCart}
-                className="bg-purple-500 text-white uppercase font-bold py-2 px-4 rounded-full hover:bg-purple-600 transition text-sm"
+                className="bg-purple-500 text-white uppercase font-bold py-1 px-3 sm:py-2 sm:px-4 rounded-full hover:bg-purple-600 transition text-xs sm:text-sm"
               >
                 Add to Cart
               </button>
@@ -285,24 +285,24 @@
         : null;
 
       return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div ref={modalRef} className="bg-white rounded-lg shadow-lg p-4 max-w-md w-full">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">{product.title || 'Unknown Product'}</h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-2 sm:px-0">
+          <div ref={modalRef} className="bg-white rounded-lg shadow-lg p-3 sm:p-4 max-w-sm sm:max-w-md w-full">
+            <div className="flex justify-between items-center mb-3 sm:mb-4">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">{product.title || 'Unknown Product'}</h3>
               <button onClick={onClose} className="text-gray-600 hover:text-gray-900">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
-            <img src={product.image || 'https://via.placeholder.com/300'} alt={product.title || 'Product'} className="w-full h-48 object-contain rounded mb-4" />
-            <div className="space-y-2">
+            <img src={product.image || 'https://via.placeholder.com/300'} alt={product.title || 'Product'} className="w-full h-40 sm:h-48 object-contain rounded mb-3 sm:mb-4" />
+            <div className="space-y-1 sm:space-y-2">
               <div className="flex items-center justify-between">
-                <p className="text-base font-semibold text-gray-900">
+                <p className="text-sm sm:text-base font-semibold text-gray-900">
                   UGX {Number.isFinite(product.priceUGX) ? product.priceUGX.toLocaleString() : '0'}
                 </p>
                 {product.originalPriceUGX && Number.isFinite(product.originalPriceUGX) && (
-                  <p className="text-sm text-gray-500 line-through">
+                  <p className="text-xs sm:text-sm text-gray-500 line-through">
                     UGX {product.originalPriceUGX.toLocaleString()}
                   </p>
                 )}
@@ -416,41 +416,41 @@
       };
 
       return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-2 sm:px-0">
           <div
             ref={modalRef}
-            className="bg-white rounded-lg shadow-lg p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto"
+            className="bg-white rounded-lg shadow-lg p-4 sm:p-6 max-w-md sm:max-w-lg w-full max-h-[80vh] overflow-y-auto"
           >
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">Order Summary</h3>
-            <div className="space-y-2">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">Order Summary</h3>
+            <div className="space-y-1 sm:space-y-2">
               {safeCart.map((item, index) => (
-                <div key={index} className="flex items-center justify-between py-2 border-b">
-                  <div className="flex items-center space-x-3">
-                    <img src={item?.image || 'https://via.placeholder.com/48'} alt={item?.title || 'Item'} className="w-12 h-12 object-contain rounded" />
+                <div key={index} className="flex items-center justify-between py-1 sm:py-2 border-b">
+                  <div className="flex items-center space-x-2 sm:space-x-3">
+                    <img src={item?.image || 'https://via.placeholder.com/48'} alt={item?.title || 'Item'} className="w-10 h-10 sm:w-12 sm:h-12 object-contain rounded" />
                     <div>
-                      <h4 className="text-sm font-medium text-gray-900 truncate w-40">{item?.title || 'Unknown Item'}</h4>
+                      <h4 className="text-xs sm:text-sm font-medium text-gray-900 truncate w-32 sm:w-40">{item?.title || 'Unknown Item'}</h4>
                       {item?.size && <p className="text-xs text-gray-600">Size: {item.size}</p>}
                       <p className="text-xs text-gray-600">
                         UGX {(Number.isFinite(item?.price) ? item.price : 0).toLocaleString()} x {(Number.isFinite(item?.quantity) ? item.quantity : 0)}
                       </p>
                     </div>
                   </div>
-                  <p className="text-sm font-semibold">
+                  <p className="text-xs sm:text-sm font-semibold">
                     UGX {((Number.isFinite(item?.price) ? item.price : 0) * (Number.isFinite(item?.quantity) ? item.quantity : 0)).toLocaleString()}
                   </p>
                 </div>
               ))}
             </div>
-            <div className="mt-4">
-              <h4 className="text-sm font-medium text-gray-900 mb-1">Delivery Information</h4>
-              <div className="mb-4 space-y-2">
+            <div className="mt-3 sm:mt-4">
+              <h4 className="text-xs sm:text-sm font-medium text-gray-900 mb-1">Delivery Information</h4>
+              <div className="mb-3 sm:mb-4 space-y-1 sm:space-y-2">
                 <div>
                   <label className="block text-xs font-medium text-gray-700">Email Address</label>
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="mt-1 w-full border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="mt-1 w-full border border-gray-300 rounded-md px-2 py-1 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                     placeholder="your.email@example.com"
                   />
                 </div>
@@ -460,7 +460,7 @@
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="mt-1 w-full border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="mt-1 w-full border border-gray-300 rounded-md px-2 py-1 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                     placeholder="+256123456789"
                   />
                 </div>
@@ -469,7 +469,7 @@
                   <select
                     value={paymentMethod}
                     onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="mt-1 w-full border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="mt-1 w-full border border-gray-300 rounded-md px-2 py-1 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                   >
                     <option value="">Select Payment Method</option>
                     <option value="MTN Mobile Money">MTN Mobile Money</option>
@@ -479,30 +479,30 @@
                 </div>
                 {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
               </div>
-              <h4 className="text-sm font-medium text-gray-900 mb-1">Price Breakdown</h4>
+              <h4 className="text-xs sm:text-sm font-medium text-gray-900 mb-1">Price Breakdown</h4>
               <div className="space-y-1">
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-xs sm:text-sm">
                   <span>Subtotal:</span>
                   <div className="text-right">
                     <span>UGX {subtotal.toLocaleString()}</span>
                     <p className="text-xs text-gray-600">USD {subtotalUSD}</p>
                   </div>
                 </div>
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-xs sm:text-sm">
                   <span>Delivery Fee:</span>
                   <div className="text-right">
                     <span>UGX {totalDeliveryFee.toLocaleString()}</span>
                     <p className="text-xs text-gray-600">USD {deliveryFeeUSD}</p>
                   </div>
                 </div>
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-xs sm:text-sm">
                   <span>Service Fee:</span>
                   <div className="text-right">
                     <span>UGX {serviceFee.toLocaleString()}</span>
                     <p className="text-xs text-gray-600">USD {serviceFeeUSD}</p>
                   </div>
                 </div>
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-xs sm:text-sm">
                   <span>Tip:</span>
                   <div className="text-right">
                     <input
@@ -513,12 +513,12 @@
                         const value = parseInt(e.target.value);
                         setTip(isNaN(value) ? 0 : Math.max(0, value));
                       }}
-                      className="w-20 border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      className="w-16 sm:w-20 border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500"
                     />
                     <p className="text-xs text-gray-600">USD {tipUSD}</p>
                   </div>
                 </div>
-                <div className="flex justify-between text-lg font-semibold border-t pt-1">
+                <div className="flex justify-between text-base sm:text-lg font-semibold border-t pt-1">
                   <span>Total:</span>
                   <div className="text-right">
                     <span>UGX {total.toLocaleString()}</span>
@@ -527,16 +527,16 @@
                 </div>
               </div>
             </div>
-            <div className="flex justify-end space-x-4 mt-4">
+            <div className="flex justify-end space-x-3 sm:space-x-4 mt-3 sm:mt-4">
               <button
                 onClick={onClose}
-                className="bg-gray-300 text-gray-900 uppercase font-bold py-2 px-4 rounded-full hover:bg-gray-400 transition text-sm"
+                className="bg-gray-300 text-gray-900 uppercase font-bold py-1 px-3 sm:py-2 sm:px-4 rounded-full hover:bg-gray-400 transition text-xs sm:text-sm"
               >
                 Cancel
               </button>
               <button
                 onClick={handleConfirm}
-                className="bg-purple-500 text-white uppercase font-bold py-2 px-4 rounded-full hover:bg-purple-600 transition text-sm"
+                className="bg-purple-500 text-white uppercase font-bold py-1 px-3 sm:py-2 sm:px-4 rounded-full hover:bg-purple-600 transition text-xs sm:text-sm"
               >
                 Confirm Order
               </button>
@@ -564,25 +564,25 @@
       const totalUSD = (total * exchangeRate).toFixed(2);
 
       return (
-        <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-50 p-4 max-h-96 overflow-y-auto">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Your Cart</h3>
+        <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-white rounded-lg shadow-lg z-50 p-3 sm:p-4 max-h-80 sm:max-h-96 overflow-y-auto">
+          <div className="flex justify-between items-center mb-3 sm:mb-4">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900">Your Cart</h3>
             <button onClick={closeMiniCart} className="text-gray-600 hover:text-gray-900">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
           {safeCart.length === 0 ? (
-            <p className="text-gray-600 text-sm">Your cart is empty.</p>
+            <p className="text-gray-600 text-xs sm:text-sm">Your cart is empty.</p>
           ) : (
             <>
               {safeCart.map((item, index) => (
-                <div key={index} className="flex items-center justify-between py-2 border-b">
-                  <div className="flex items-center space-x-3">
-                    <img src={item?.image || 'https://via.placeholder.com/48'} alt={item?.title || 'Item'} className="w-12 h-12 object-contain rounded" />
+                <div key={index} className="flex items-center justify-between py-1 sm:py-2 border-b">
+                  <div className="flex items-center space-x-2 sm:space-x-3">
+                    <img src={item?.image || 'https://via.placeholder.com/48'} alt={item?.title || 'Item'} className="w-10 h-10 sm:w-12 sm:h-12 object-contain rounded" />
                     <div>
-                      <h4 className="text-sm font-medium text-gray-900 truncate w-40">{item?.title || 'Unknown Item'}</h4>
+                      <h4 className="text-xs sm:text-sm font-medium text-gray-900 truncate w-28 sm:w-40">{item?.title || 'Unknown Item'}</h4>
                       {item?.size && <p className="text-xs text-gray-600">Size: {item.size}</p>}
                       <p className="text-xs text-gray-600">
                         UGX {(Number.isFinite(item?.price) ? item.price : 0).toLocaleString()} x {(Number.isFinite(item?.quantity) ? item.quantity : 0)}
@@ -594,14 +594,14 @@
                     className="text-red-500 hover:text-red-700"
                     aria-label="Remove item from cart"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4M9 7v12m6-12v12M3 7h18" />
                     </svg>
                   </button>
                 </div>
               ))}
-              <div className="mt-4">
-                <div className="flex justify-between text-lg font-semibold mb-2">
+              <div className="mt-3 sm:mt-4">
+                <div className="flex justify-between text-base sm:text-lg font-semibold mb-2">
                   <span>Total:</span>
                   <div className="text-right">
                     <span>UGX {total.toLocaleString()}</span>
@@ -610,7 +610,7 @@
                 </div>
                 <button
                   onClick={openCheckoutModal}
-                  className="w-full bg-black text-white uppercase font-bold py-2 rounded-full hover:bg-white hover:text-black hover:border hover:border-black transition text-sm"
+                  className="w-full bg-black text-white uppercase font-bold py-1 sm:py-2 rounded-full hover:bg-white hover:text-black hover:border hover:border-black transition text-xs sm:text-sm"
                 >
                   CHECKOUT
                 </button>
@@ -673,32 +673,32 @@
       };
 
       return (
-        <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-50 p-4 max-h-96 overflow-y-auto">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Your Wishlist</h3>
+        <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-white rounded-lg shadow-lg z-50 p-3 sm:p-4 max-h-80 sm:max-h-96 overflow-y-auto">
+          <div className="flex justify-between items-center mb-3 sm:mb-4">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900">Your Wishlist</h3>
             <button onClick={closeMiniWishlist} className="text-gray-600 hover:text-gray-900">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
           {wishlistItems.length === 0 ? (
-            <p className="text-gray-600 text-sm">Your wishlist is empty.</p>
+            <p className="text-gray-600 text-xs sm:text-sm">Your wishlist is empty.</p>
           ) : (
             <>
               {wishlistItems.map((item, index) => {
                 const totalPrice = (Number.isFinite(item?.priceUGX) ? item.priceUGX : 0) + deliveryFeePerItem + serviceFee;
                 const priceUSD = (totalPrice * exchangeRate).toFixed(2);
                 return (
-                  <div key={index} className="flex items-center justify-between py-2 border-b">
-                    <div className="flex items-center space-x-3">
+                  <div key={index} className="flex items-center justify-between py-1 sm:py-2 border-b">
+                    <div className="flex items-center space-x-2 sm:space-x-3">
                       <img
                         src={item?.image || 'https://via.placeholder.com/48'}
                         alt={item?.title || 'Item'}
-                        className="w-12 h-12 object-contain rounded"
+                        className="w-10 h-10 sm:w-12 sm:h-12 object-contain rounded"
                       />
                       <div>
-                        <h4 className="text-sm font-medium text-gray-900 truncate w-40">{item?.title || 'Unknown Item'}</h4>
+                        <h4 className="text-xs sm:text-sm font-medium text-gray-900 truncate w-28 sm:w-40">{item?.title || 'Unknown Item'}</h4>
                         {Number.isFinite(item?.priceUGX) && item.priceUGX > 0 && (
                           <>
                             <p className="text-xs text-gray-600">
@@ -716,7 +716,7 @@
                       className="text-red-500 hover:text-red-700"
                       aria-label={`Remove ${item.title} from wishlist`}
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     </button>
@@ -726,7 +726,7 @@
               <button
                 onClick={handleAddAllToCart}
                 disabled={wishlistItems.length === 0}
-                className={`w-full bg-black text-white uppercase font-bold py-2 rounded-full transition text-sm mt-4 ${
+                className={`w-full bg-black text-white uppercase font-bold py-1 sm:py-2 rounded-full transition text-xs sm:text-sm mt-3 sm:mt-4 ${
                   wishlistItems.length === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white hover:text-black hover:border hover:border-black'
                 }`}
               >
@@ -761,99 +761,159 @@
 
       return (
         <header className="bg-gray-900 text-white sticky top-8 z-40">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4 relative">
-              <h1 className="text-2xl font-bold">
-                aura
-              </h1>
-            </div>
-            <div className="flex-1 mx-4">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search products..."
-                  value={searchQuery || ''}
-                  onChange={(e) => handleSearchChange(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  className="w-full py-2 pl-10 pr-10 rounded-full bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
-                />
-                <svg
-                  className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                {searchQuery && (
-                  <button
-                    onClick={clearSearch}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+          <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-3 sm:h-16">
+              <div className="flex items-center justify-between sm:justify-start sm:space-x-4 w-full sm:w-auto">
+                <h1 className="text-xl sm:text-2xl font-bold">
+                  aura
+                </h1>
+                <div className="flex items-center space-x-2 sm:space-x-4 sm:hidden">
+                  <CategoryMenu
+                    categories={categories}
+                    subcategories={subcategories}
+                    setSelectedCategory={setSelectedCategory}
+                    setSelectedSubcategory={setSelectedSubcategory}
+                  />
+                  <div className="relative" ref={wishlistRef}>
+                    <button
+                      onClick={() => {
+                        toggleMiniWishlist(!isMiniWishlistOpen);
+                        if (isMiniCartOpen) closeMiniCart();
+                      }}
+                      className="hover:text-yellow-400 relative focus:outline-none text-sm"
+                    >
+                      Wishlist
+                      {safeWishlistCount > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-yellow-400 text-gray-900 text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                          {safeWishlistCount}
+                        </span>
+                      )}
+                    </button>
+                    {isMiniWishlistOpen && (
+                      <MiniWishlist
+                        wishlist={wishlist}
+                        toggleWishlist={toggleWishlist}
+                        products={products}
+                        closeMiniWishlist={closeMiniWishlist}
+                        addToCart={addToCart}
+                        openVariationModal={openVariationModal}
+                      />
+                    )}
+                  </div>
+                  <div className="relative" ref={cartRef}>
+                    <button
+                      onClick={() => {
+                        toggleMiniCart(!isMiniCartOpen);
+                        if (isMiniWishlistOpen) closeMiniWishlist();
+                      }}
+                      className="hover:text-yellow-400 relative focus:outline-none text-sm"
+                    >
+                      Cart
+                      {safeCartItemCount > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-yellow-400 text-gray-900 text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                          {safeCartItemCount}
+                        </span>
+                      )}
+                    </button>
+                    {isMiniCartOpen && (
+                      <MiniCart
+                        cart={cart}
+                        removeFromCart={removeFromCart}
+                        closeMiniCart={closeMiniCart}
+                        openCheckoutModal={openCheckoutModal}
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="flex-1 mx-0 sm:mx-4 mt-2 sm:mt-0">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search products..."
+                    value={searchQuery || ''}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    className="w-full py-1 sm:py-2 pl-8 sm:pl-10 pr-8 sm:pr-10 rounded-full bg-gray-800 text-white text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+                  />
+                  <svg
+                    className="w-4 h-4 sm:w-5 sm:h-5 absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  {searchQuery && (
+                    <button
+                      onClick={clearSearch}
+                      className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                    >
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div className="hidden sm:flex items-center space-x-4 relative">
+                <CategoryMenu
+                  categories={categories}
+                  subcategories={subcategories}
+                  setSelectedCategory={setSelectedCategory}
+                  setSelectedSubcategory={setSelectedSubcategory}
+                />
+                <a href="#" className="hover:text-yellow-400 text-sm sm:text-base">Account</a>
+                <div className="relative" ref={wishlistRef}>
+                  <button
+                    onClick={() => {
+                      toggleMiniWishlist(!isMiniWishlistOpen);
+                      if (isMiniCartOpen) closeMiniCart();
+                    }}
+                    className="hover:text-yellow-400 relative focus:outline-none text-sm sm:text-base"
+                  >
+                    Wishlist
+                    {safeWishlistCount > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-yellow-400 text-gray-900 text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                        {safeWishlistCount}
+                      </span>
+                    )}
                   </button>
-                )}
-              </div>
-            </div>
-            <div className="flex items-center space-x-4 relative">
-              <CategoryMenu
-                categories={categories}
-                subcategories={subcategories}
-                setSelectedCategory={setSelectedCategory}
-                setSelectedSubcategory={setSelectedSubcategory}
-              />
-              <a href="#" className="hover:text-yellow-400">Account</a>
-              <div className="relative" ref={wishlistRef}>
-                <button
-                  onClick={() => {
-                    toggleMiniWishlist(!isMiniWishlistOpen);
-                    if (isMiniCartOpen) closeMiniCart();
-                  }}
-                  className="hover:text-yellow-400 relative focus:outline-none"
-                >
-                  Wishlist
-                  {safeWishlistCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-yellow-400 text-gray-900 text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                      {safeWishlistCount}
-                    </span>
+                  {isMiniWishlistOpen && (
+                    <MiniWishlist
+                      wishlist={wishlist}
+                      toggleWishlist={toggleWishlist}
+                      products={products}
+                      closeMiniWishlist={closeMiniWishlist}
+                      addToCart={addToCart}
+                      openVariationModal={openVariationModal}
+                    />
                   )}
-                </button>
-                {isMiniWishlistOpen && (
-                  <MiniWishlist
-                    wishlist={wishlist}
-                    toggleWishlist={toggleWishlist}
-                    products={products}
-                    closeMiniWishlist={closeMiniWishlist}
-                    addToCart={addToCart}
-                    openVariationModal={openVariationModal}
-                  />
-                )}
-              </div>
-              <div className="relative" ref={cartRef}>
-                <button
-                  onClick={() => {
-                    toggleMiniCart(!isMiniCartOpen);
-                    if (isMiniWishlistOpen) closeMiniWishlist();
-                  }}
-                  className="hover:text-yellow-400 relative focus:outline-none"
-                >
-                  Cart
-                  {safeCartItemCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-yellow-400 text-gray-900 text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                      {safeCartItemCount}
-                    </span>
+                </div>
+                <div className="relative" ref={cartRef}>
+                  <button
+                    onClick={() => {
+                      toggleMiniCart(!isMiniCartOpen);
+                      if (isMiniWishlistOpen) closeMiniWishlist();
+                    }}
+                    className="hover:text-yellow-400 relative focus:outline-none text-sm sm:text-base"
+                  >
+                    Cart
+                    {safeCartItemCount > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-yellow-400 text-gray-900 text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                        {safeCartItemCount}
+                      </span>
+                    )}
+                  </button>
+                  {isMiniCartOpen && (
+                    <MiniCart
+                      cart={cart}
+                      removeFromCart={removeFromCart}
+                      closeMiniCart={closeMiniCart}
+                      openCheckoutModal={openCheckoutModal}
+                    />
                   )}
-                </button>
-                {isMiniCartOpen && (
-                  <MiniCart
-                    cart={cart}
-                    removeFromCart={removeFromCart}
-                    closeMiniCart={closeMiniCart}
-                    openCheckoutModal={openCheckoutModal}
-                  />
-                )}
+                </div>
               </div>
             </div>
           </div>
@@ -870,11 +930,11 @@
         <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
           <div className="relative">
             <button onClick={openDetailsPopup} className="w-full">
-              <img src={image || 'https://via.placeholder.com/300'} alt={title || 'Product'} className="w-full h-48 object-contain" />
+              <img src={image || 'https://via.placeholder.com/300'} alt={title || 'Product'} className="w-full h-40 sm:h-48 object-contain" />
             </button>
             <button
               onClick={() => toggleWishlist(title)}
-              className={`absolute top-2 right-2 w-5 h-5 ${
+              className={`absolute top-2 right-2 w-4 h-4 sm:w-5 sm:h-5 ${
                 isWishlisted ? 'text-red-500 fill-current' : 'text-gray-600 fill-none stroke-current'
               } hover:text-red-500 transition`}
               aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
@@ -886,34 +946,34 @@
               </svg>
             </button>
             {Number.isFinite(discount) && discount > 0 && (
-              <span className="absolute top-2 left-2 bg-orange-500 text-white text-xs font-bold py-1 px-2 rounded">
+              <span className="absolute top-2 left-2 bg-orange-500 text-white text-[10px] sm:text-xs font-bold py-0.5 sm:py-1 px-1 sm:px-2 rounded">
                 -{discount}%
               </span>
             )}
             {isOfficialStore && (
-              <span className="absolute top-2 right-10 bg-blue-500 text-white text-xs font-bold py-1 px-2 rounded">
+              <span className="absolute top-2 right-8 sm:right-10 bg-blue-500 text-white text-[10px] sm:text-xs font-bold py-0.5 sm:py-1 px-1 sm:px-2 rounded">
                 Official Store
               </span>
             )}
             {isRefurbished && (
-              <span className="absolute top-10 left-2 bg-green-500 text-white text-xs font-bold py-1 px-2 rounded">
+              <span className="absolute top-8 sm:top-10 left-2 bg-green-500 text-white text-[10px] sm:text-xs font-bold py-0.5 sm:py-1 px-1 sm:px-2 rounded">
                 Refurbished
               </span>
             )}
             {isGlobal && (
-              <span className="absolute top-10 right-2 bg-purple-500 text-white text-xs font-bold py-1 px-2 rounded">
+              <span className="absolute top-8 sm:top-10 right-2 bg-purple-500 text-white text-[10px] sm:text-xs font-bold py-0.5 sm:py-1 px-1 sm:px-2 rounded">
                 Shipped from Abroad
               </span>
             )}
           </div>
-          <div className="p-2">
-            <h3 className="text-sm text-gray-900 truncate">{title || 'Unknown Product'}</h3>
+          <div className="p-2 sm:p-3">
+            <h3 className="text-xs sm:text-sm text-gray-900 truncate">{title || 'Unknown Product'}</h3>
             <div className="flex items-center justify-between mt-1">
-              <p className="text-base font-semibold text-gray-900">
+              <p className="text-sm sm:text-base font-semibold text-gray-900">
                 UGX {(Number.isFinite(priceUGX) ? priceUGX : 0).toLocaleString()}
               </p>
               {Number.isFinite(originalPriceUGX) && originalPriceUGX > 0 && (
-                <p className="text-sm text-gray-500 line-through">
+                <p className="text-xs sm:text-sm text-gray-500 line-through">
                   UGX {originalPriceUGX.toLocaleString()}
                 </p>
               )}
@@ -939,7 +999,7 @@
                   addToCart({ title, price: priceUGX, image });
                 }
               }}
-              className="mt-2 w-full bg-black text-white uppercase font-bold py-2 rounded-full hover:bg-white hover:text-black hover:border hover:border-black transition text-sm"
+              className="mt-2 w-full bg-black text-white uppercase font-bold py-1 sm:py-2 rounded-full hover:bg-white hover:text-black hover:border hover:border-black transition text-xs sm:text-sm"
             >
               Add to Cart
             </button>
@@ -964,8 +1024,8 @@
       });
 
       return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-6 sm:py-8">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
             {filteredProducts.length > 0 ? (
               filteredProducts.map((product, index) => (
                 <ProductCard
@@ -979,7 +1039,7 @@
                 />
               ))
             ) : (
-              <p className="text-gray-600 text-center col-span-full text-lg font-medium">
+              <p className="text-gray-600 text-center col-span-full text-base sm:text-lg font-medium">
                 COMING SOON
               </p>
             )}
