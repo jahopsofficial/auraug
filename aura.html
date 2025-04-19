@@ -65,7 +65,22 @@
     const FreeShippingBanner = () => {
       return (
         <div className="fixed top-0 w-full bg-black text-white text-sm font-bold text-center py-2 z-50">
-          Free Shipping on Orders Over UGX 1,000,000!
+          FREE SHIPPING FOR ORDERS ABOVE 100,000
+        </div>
+      );
+    };
+
+    const Banner = () => {
+      return (
+        <div className="w-full bg-gray-200">
+          <img
+            src="https://i.ibb.co/twC37Tky/Exp-Storefront-CTA-Banner-DT-03-3000x400-1.jpg"
+            alt="Promotional Banner"
+            className="w-full h-64 object-cover"
+            onError={(e) => {
+              e.target.src = 'https://via.placeholder.com/1200x300?text=Banner+Image+Not+Found';
+            }}
+          />
         </div>
       );
     };
@@ -80,6 +95,10 @@
       const toggleCategory = (category) => {
         setOpenCategory(openCategory === category ? null : category);
       };
+
+      // Safeguard for categories and subcategories
+      const safeCategories = Array.isArray(categories) ? categories : [];
+      const safeSubcategories = subcategories || {};
 
       return (
         <div className="relative" ref={menuRef}>
@@ -100,7 +119,7 @@
           {isOpen && (
             <div className="absolute left-0 mt-2 w-64 bg-white rounded-lg shadow-lg z-50 p-4 max-h-96 overflow-y-auto">
               <ul className="space-y-2">
-                {categories.map((category) => (
+                {safeCategories.map((category) => (
                   <li key={category}>
                     <div className="flex items-center justify-between">
                       <button
@@ -113,7 +132,7 @@
                       >
                         {category}
                       </button>
-                      {subcategories[category]?.length > 0 && (
+                      {Array.isArray(safeSubcategories[category]) && safeSubcategories[category].length > 0 && (
                         <button
                           onClick={() => toggleCategory(category)}
                           className="text-gray-500 hover:text-purple-600 focus:outline-none"
@@ -131,9 +150,9 @@
                         </button>
                       )}
                     </div>
-                    {subcategories[category]?.length > 0 && openCategory === category && (
+                    {Array.isArray(safeSubcategories[category]) && safeSubcategories[category].length > 0 && openCategory === category && (
                       <ul className="mt-1 ml-3 space-y-1">
-                        {subcategories[category].map((subcategory) => (
+                        {safeSubcategories[category].map((subcategory) => (
                           <li key={subcategory.name}>
                             <button
                               onClick={() => {
@@ -158,76 +177,13 @@
       );
     };
 
-    const CategoryFilters = ({ categories, subcategories, selectedCategory, selectedSubcategory, setSelectedCategory, setSelectedSubcategory }) => {
-      return (
-        <div className="bg-[#1C2526] text-white py-4 mt-4">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="mb-4">
-              <div className="flex flex-wrap gap-2 mt-2">
-                <button
-                  onClick={() => {
-                    setSelectedCategory(null);
-                    setSelectedSubcategory(null);
-                  }}
-                  className={`px-4 py-2 rounded-full text-sm font-medium ${
-                    !selectedCategory ? 'bg-white text-[#1C2526]' : 'bg-[#2A3435] hover:bg-[#343F40]'
-                  }`}
-                >
-                  All
-                </button>
-                {categories.map((category) => (
-                  <button
-                    key={category}
-                    onClick={() => {
-                      setSelectedCategory(category);
-                      setSelectedSubcategory(null);
-                    }}
-                    className={`px-4 py-2 rounded-full text-sm font-medium ${
-                      selectedCategory === category ? 'bg-white text-[#1C2526]' : 'bg-[#2A3435] hover:bg-[#343F40]'
-                    }`}
-                  >
-                    {category}
-                  </button>
-                ))}
-              </div>
-            </div>
-            {selectedCategory && subcategories[selectedCategory]?.length > 0 && (
-              <div>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  <button
-                    onClick={() => setSelectedSubcategory(null)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium ${
-                      !selectedSubcategory ? 'bg-white text-[#1C2526]' : 'bg-[#2A3435] hover:bg-[#343F40]'
-                    }`}
-                  >
-                    All
-                  </button>
-                  {subcategories[selectedCategory].map((subcategory) => (
-                    <button
-                      key={subcategory.name}
-                      onClick={() => setSelectedSubcategory(subcategory.name)}
-                      className={`px-4 py-2 rounded-full text-sm font-medium ${
-                        selectedSubcategory === subcategory.name ? 'bg-white text-[#1C2526]' : 'bg-[#2A3435] hover:bg-[#343F40]'
-                      }`}
-                    >
-                      {subcategory.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      );
-    };
-
     const SaleProductsSection = ({ products, openVariationModal, addToCart, toggleWishlist, wishlist }) => {
-      const saleProducts = (Array.isArray(products.current) ? products.current : []).filter((product) => product.discount);
+      const saleProducts = (Array.isArray(products?.current) ? products.current : []).filter((product) => product?.discount);
 
-      if (saleProducts.length === 0) return null;
+      if (!saleProducts.length) return null;
 
       return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Products on Sale</h2>
           <div className="flex overflow-x-auto space-x-4 pb-4">
             {saleProducts.map((product, index) => (
@@ -237,241 +193,10 @@
                   openVariationModal={openVariationModal}
                   addToCart={addToCart}
                   toggleWishlist={toggleWishlist}
-                  isWishlisted={wishlist.includes(product.title)}
+                  isWishlisted={Array.isArray(wishlist) && wishlist.includes(product.title)}
                 />
               </div>
             ))}
-          </div>
-        </div>
-      );
-    };
-
-    const AddProductModal = ({ onAddProduct, onClose }) => {
-      const [title, setTitle] = React.useState("");
-      const [priceUGX, setPriceUGX] = React.useState("");
-      const [image, setImage] = React.useState("");
-      const [category, setCategory] = React.useState("");
-      const [subcategory, setSubcategory] = React.useState("");
-      const [variations, setVariations] = React.useState("");
-      const [discount, setDiscount] = React.useState("");
-      const [isFreeShipping, setIsFreeShipping] = React.useState(true);
-      const [isOnSale, setIsOnSale] = React.useState(false);
-      const [isGlobal, setIsGlobal] = React.useState(false);
-      const [isOfficialStore, setIsOfficialStore] = React.useState(false);
-      const [error, setError] = React.useState("");
-      const modalRef = React.useRef(null);
-
-      useOutsideClick(modalRef, onClose);
-
-      const handleAddProduct = () => {
-        if (!title.trim() || !priceUGX || !image.trim() || !category.trim() || !subcategory.trim()) {
-          setError("Please fill all required fields");
-          return;
-        }
-        setError("");
-        onAddProduct({
-          title,
-          priceUGX: parseFloat(priceUGX),
-          originalPriceUGX: discount ? Math.round(parseFloat(priceUGX) / (1 - parseFloat(discount) / 100)) : undefined,
-          discount: discount ? parseFloat(discount) : undefined,
-          image,
-          category: isOnSale ? "Sale" : category,
-          subcategory,
-          variations: variations.trim() ? variations.split(",").map((v) => v.trim()) : [],
-          isOfficialStore,
-          isRefurbished: false,
-          isGlobal,
-          isFreeShipping
-        });
-        onClose();
-      };
-
-      return (
-        <div className="fixed top-20 left-0 right-0 z-50 flex justify-center">
-          <div ref={modalRef} className="bg-white rounded-lg shadow-lg p-4 max-w-md w-full">
-            <h3 className="text-md font-semibold text-gray-900 mb-2">Add New Product</h3>
-            <div className="space-y-2 max-h-96 overflow-y-auto">
-              <div>
-                <label className="block text-xs font-medium text-gray-700">Title</label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="mt-1 w-full border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  placeholder="Product Name"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700">Price (UGX)</label>
-                <input
-                  type="number"
-                  value={priceUGX}
-                  onChange={(e) => setPriceUGX(e.target.value)}
-                  className="mt-1 w-full border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  placeholder="100000"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700">Discount (%)</label>
-                <input
-                  type="number"
-                  value={discount}
-                  onChange={(e) => setDiscount(e.target.value)}
-                  className="mt-1 w-full border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  placeholder="20"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700">Shipping</label>
-                <select
-                  value={isFreeShipping ? "free" : "fee"}
-                  onChange={(e) => setIsFreeShipping(e.target.value === "free")}
-                  className="mt-1 w-full border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500"
-                >
-                  <option value="free">Free Shipping</option>
-                  <option value="fee">Shipping at a Fee</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700">On Sale</label>
-                <input
-                  type="checkbox"
-                  checked={isOnSale}
-                  onChange={(e) => setIsOnSale(e.target.checked)}
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700">Shipped from Abroad</label>
-                <input
-                  type="checkbox"
-                  checked={isGlobal}
-                  onChange={(e) => setIsGlobal(e.target.checked)}
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700">Official Store</label>
-                <input
-                  type="checkbox"
-                  checked={isOfficialStore}
-                  onChange={(e) => setIsOfficialStore(e.target.checked)}
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700">Image URL</label>
-                <input
-                  type="text"
-                  value={image}
-                  onChange={(e) => setImage(e.target.value)}
-                  className="mt-1 w-full border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  placeholder="https://via.placeholder.com/300"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700">Category</label>
-                <input
-                  type="text"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  disabled={isOnSale}
-                  className="mt-1 w-full border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:bg-gray-100"
-                  placeholder="e.g., Women Clothing"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700">Subcategory</label>
-                <input
-                  type="text"
-                  value={subcategory}
-                  onChange={(e) => setSubcategory(e.target.value)}
-                  className="mt-1 w-full border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  placeholder="e.g., Dresses"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700">Variations (comma-separated, optional)</label>
-                <input
-                  type="text"
-                  value={variations}
-                  onChange={(e) => setVariations(e.target.value)}
-                  className="mt-1 w-full border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  placeholder="M,L,XL"
-                />
-              </div>
-              {error && <p className="text-red-500 text-xs">{error}</p>}
-            </div>
-            <div className="flex justify-end space-x-2 mt-3">
-              <button
-                onClick={onClose}
-                className="bg-gray-300 text-gray-900 uppercase font-bold py-1 px-3 rounded-full hover:bg-gray-400 transition text-xs"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleAddProduct}
-                className="bg-purple-500 text-white uppercase font-bold py-1 px-3 rounded-full hover:bg-purple-600 transition text-xs"
-              >
-                Add Product
-              </button>
-            </div>
-          </div>
-        </div>
-      );
-    };
-
-    const RemoveProductModal = ({ products, onRemoveProduct, onClose }) => {
-      const [selectedProduct, setSelectedProduct] = React.useState("");
-      const [error, setError] = React.useState("");
-      const modalRef = React.useRef(null);
-
-      useOutsideClick(modalRef, onClose);
-
-      const handleRemoveProduct = () => {
-        if (!selectedProduct) {
-          setError("Please select a product to remove");
-          return;
-        }
-        setError("");
-        onRemoveProduct(selectedProduct);
-        onClose();
-      };
-
-      return (
-        <div className="fixed top-20 left-0 right-0 z-50 flex justify-center">
-          <div ref={modalRef} className="bg-white rounded-lg shadow-lg p-4 max-w-md w-full">
-            <h3 className="text-md font-semibold text-gray-900 mb-2">Remove Product</h3>
-            <div className="space-y-2">
-              <div>
-                <label className="block text-xs font-medium text-gray-700">Select Product</label>
-                <select
-                  value={selectedProduct}
-                  onChange={(e) => setSelectedProduct(e.target.value)}
-                  className="mt-1 w-full border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500"
-                >
-                  <option value="">Select a product</option>
-                  {products.map((product, index) => (
-                    <option key={index} value={product.title}>{product.title}</option>
-                  ))}
-                </select>
-              </div>
-              {error && <p className="text-red-500 text-xs">{error}</p>}
-            </div>
-            <div className="flex justify-end space-x-2 mt-3">
-              <button
-                onClick={onClose}
-                className="bg-gray-300 text-gray-900 uppercase font-bold py-1 px-3 rounded-full hover:bg-gray-400 transition text-xs"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleRemoveProduct}
-                className="bg-red-500 text-white uppercase font-bold py-1 px-3 rounded-full hover:bg-red-600 transition text-xs"
-              >
-                Remove Product
-              </button>
-            </div>
           </div>
         </div>
       );
@@ -481,7 +206,7 @@
       const [selectedSize, setSelectedSize] = React.useState(null);
       const [error, setError] = React.useState("");
       const modalRef = React.useRef(null);
-      const isTablet = product.title.toLowerCase().includes("ipad");
+      const isTablet = product?.title?.toLowerCase()?.includes("ipad") || false;
 
       useOutsideClick(modalRef, onClose);
 
@@ -495,12 +220,17 @@
         onClose();
       };
 
+      // Safeguard for product and variations
+      if (!product || !Array.isArray(product.variations)) {
+        return null;
+      }
+
       return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div ref={modalRef} className="bg-white rounded-lg shadow-lg p-4 max-w-md w-full">
             <div className="flex items-center space-x-4 mb-4">
-              <img src={product.image} alt={product.title} className="w-16 h-16 object-contain rounded" />
-              <h3 className="text-lg font-semibold text-gray-900">{product.title}</h3>
+              <img src={product.image || 'https://via.placeholder.com/64'} alt={product.title || 'Product'} className="w-16 h-16 object-contain rounded" />
+              <h3 className="text-lg font-semibold text-gray-900">{product.title || 'Unknown Product'}</h3>
             </div>
             <div className="mb-4">
               <h4 className="text-sm font-medium text-gray-900 mb-2">{isTablet ? "Select Storage & RAM" : "Select Size"}</h4>
@@ -538,44 +268,145 @@
       );
     };
 
-    const CheckoutModal = ({ cart, onConfirm, onClose }) => {
+    const ProductDetailsPopup = ({ product, onClose }) => {
       const modalRef = React.useRef(null);
       const exchangeRate = 0.00027;
-      const vatRate = 0.18;
-      const transportFee = 9000;
 
       useOutsideClick(modalRef, onClose);
 
-      const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-      const vat = subtotal * vatRate;
-      const totalTransport = transportFee * cart.length;
-      const total = subtotal + vat + totalTransport;
+      // Safeguard for product
+      if (!product) {
+        return null;
+      }
+
+      const priceUSD = Number.isFinite(product.priceUGX) ? (product.priceUGX * exchangeRate).toFixed(2) : '0.00';
+      const originalPriceUSD = product.originalPriceUGX && Number.isFinite(product.originalPriceUGX)
+        ? (product.originalPriceUGX * exchangeRate).toFixed(2)
+        : null;
+
+      return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div ref={modalRef} className="bg-white rounded-lg shadow-lg p-4 max-w-md w-full">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">{product.title || 'Unknown Product'}</h3>
+              <button onClick={onClose} className="text-gray-600 hover:text-gray-900">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <img src={product.image || 'https://via.placeholder.com/300'} alt={product.title || 'Product'} className="w-full h-48 object-contain rounded mb-4" />
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-base font-semibold text-gray-900">
+                  UGX {Number.isFinite(product.priceUGX) ? product.priceUGX.toLocaleString() : '0'}
+                </p>
+                {product.originalPriceUGX && Number.isFinite(product.originalPriceUGX) && (
+                  <p className="text-sm text-gray-500 line-through">
+                    UGX {product.originalPriceUGX.toLocaleString()}
+                  </p>
+                )}
+              </div>
+              <p className="text-xs text-gray-600">USD {priceUSD}</p>
+              {product.discount && Number.isFinite(product.discount) && (
+                <p className="text-xs text-orange-500">-{product.discount}% OFF</p>
+              )}
+              {product.isFreeShipping && (
+                <p className="text-xs text-green-600">Free Shipping Eligible</p>
+              )}
+              {product.isGlobal && (
+                <p className="text-xs text-purple-600">May take 7-14 days for delivery</p>
+              )}
+              {product.isOfficialStore && (
+                <p className="text-xs text-blue-600">Official Store Product</p>
+              )}
+              {product.isRefurbished && (
+                <p className="text-xs text-green-600">Refurbished Item</p>
+              )}
+              {Array.isArray(product.variations) && product.variations.length > 0 && (
+                <p className="text-xs text-gray-600">
+                  Available Variations: {product.variations.join(", ")}
+                </p>
+              )}
+              <p className="text-xs text-gray-600">
+                Category: {product.category || 'N/A'} {product.subcategory && `> ${product.subcategory}`}
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const CheckoutModal = ({ cart, onConfirm, onClose }) => {
+      const modalRef = React.useRef(null);
+      const exchangeRate = 0.00027;
+      const deliveryFeePerItem = 1000;
+      const serviceFee = 500;
+      const [email, setEmail] = React.useState("");
+      const [phone, setPhone] = React.useState("");
+      const [paymentMethod, setPaymentMethod] = React.useState("");
+      const [tip, setTip] = React.useState(0);
+      const [error, setError] = React.useState("");
+
+      useOutsideClick(modalRef, onClose);
+
+      // Safeguard for cart
+      const safeCart = Array.isArray(cart) ? cart : [];
+
+      const subtotal = safeCart.reduce((sum, item) => {
+        const price = Number.isFinite(item?.price) ? item.price : 0;
+        const quantity = Number.isFinite(item?.quantity) ? item.quantity : 0;
+        return sum + price * quantity;
+      }, 0);
+      const totalDeliveryFee = deliveryFeePerItem * safeCart.length;
+      const total = subtotal + totalDeliveryFee + serviceFee + (Number.isFinite(tip) ? tip : 0);
 
       const subtotalUSD = (subtotal * exchangeRate).toFixed(2);
-      const vatUSD = (vat * exchangeRate).toFixed(2);
-      const transportUSD = (totalTransport * exchangeRate).toFixed(2);
+      const deliveryFeeUSD = (totalDeliveryFee * exchangeRate).toFixed(2);
+      const serviceFeeUSD = (serviceFee * exchangeRate).toFixed(2);
+      const tipUSD = ((Number.isFinite(tip) ? tip : 0) * exchangeRate).toFixed(2);
       const totalUSD = (total * exchangeRate).toFixed(2);
 
       const handleConfirm = () => {
+        if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          setError("Please enter a valid email address");
+          return;
+        }
+        if (!phone.trim() || !/^\+?\d{10,12}$/.test(phone)) {
+          setError("Please enter a valid phone number");
+          return;
+        }
+        if (!paymentMethod) {
+          setError("Please select a payment method");
+          return;
+        }
+        setError("");
+
         let invoice = `📋 *aura Invoice*\n`;
         invoice += `===\n\n`;
-        invoice += `=== Order ===\n`;
-        cart.forEach((item, index) => {
-          const itemTotal = item.price * item.quantity;
+        invoice += `=== Delivery Information ===\n`;
+        invoice += `Email: ${email}\n`;
+        invoice += `Phone: ${phone}\n`;
+        invoice += `Payment Method: ${paymentMethod}\n\n`;
+        invoice += `=== Purchase Summary ===\n`;
+        safeCart.forEach((item, index) => {
+          const price = Number.isFinite(item?.price) ? item.price : 0;
+          const quantity = Number.isFinite(item?.quantity) ? item.quantity : 0;
+          const itemTotal = price * quantity;
           const itemTotalUSD = (itemTotal * exchangeRate).toFixed(2);
-          invoice += `${index + 1}. *${item.title}* `;
-          if (item.size) invoice += `(${item.size}) `;
-          invoice += `x${item.quantity} - UGX ${itemTotal.toLocaleString()} (USD ${itemTotalUSD})\n`;
+          invoice += `${index + 1}. *${item?.title || 'Unknown Item'}*`;
+          if (item?.size) invoice += ` (${item.size})`;
+          invoice += ` x${quantity} - UGX ${itemTotal.toLocaleString()} (USD ${itemTotalUSD})\n`;
           invoice += `-\n`;
         });
-        invoice += `\n=== Summary ===\n`;
+        invoice += `\n=== Price Breakdown ===\n`;
         invoice += `Subtotal....UGX ${subtotal.toLocaleString()} (USD ${subtotalUSD})\n`;
-        invoice += `VAT (18%)...UGX ${vat.toLocaleString()} (USD ${vatUSD})\n`;
-        invoice += `Transport...UGX ${totalTransport.toLocaleString()} (USD ${transportUSD})\n`;
+        invoice += `Delivery Fee...UGX ${totalDeliveryFee.toLocaleString()} (USD ${deliveryFeeUSD})\n`;
+        invoice += `Service Fee...UGX ${serviceFee.toLocaleString()} (USD ${serviceFeeUSD})\n`;
+        invoice += `Tip...UGX ${(Number.isFinite(tip) ? tip : 0).toLocaleString()} (USD ${tipUSD})\n`;
         invoice += `*Total*......*UGX ${total.toLocaleString()}* (USD ${totalUSD})\n`;
         invoice += `===\n`;
         invoice += `Thank you for your order! Please confirm receipt. ✅\n`;
-        invoice += `aura - Premium Shopping`;
 
         const encodedMessage = encodeURIComponent(invoice);
         const whatsappUrl = `https://wa.me/256758468490?text=${encodedMessage}`;
@@ -592,23 +423,62 @@
           >
             <h3 className="text-lg font-semibold text-gray-900 mb-3">Order Summary</h3>
             <div className="space-y-2">
-              {cart.map((item, index) => (
+              {safeCart.map((item, index) => (
                 <div key={index} className="flex items-center justify-between py-2 border-b">
                   <div className="flex items-center space-x-3">
-                    <img src={item.image} alt={item.title} className="w-12 h-12 object-contain rounded" />
+                    <img src={item?.image || 'https://via.placeholder.com/48'} alt={item?.title || 'Item'} className="w-12 h-12 object-contain rounded" />
                     <div>
-                      <h4 className="text-sm font-medium text-gray-900 truncate w-40">{item.title}</h4>
-                      {item.size && <p className="text-xs text-gray-600">Size: {item.size}</p>}
-                      <p className="text-xs text-gray-600">UGX {item.price.toLocaleString()} x {item.quantity}</p>
+                      <h4 className="text-sm font-medium text-gray-900 truncate w-40">{item?.title || 'Unknown Item'}</h4>
+                      {item?.size && <p className="text-xs text-gray-600">Size: {item.size}</p>}
+                      <p className="text-xs text-gray-600">
+                        UGX {(Number.isFinite(item?.price) ? item.price : 0).toLocaleString()} x {(Number.isFinite(item?.quantity) ? item.quantity : 0)}
+                      </p>
                     </div>
                   </div>
                   <p className="text-sm font-semibold">
-                    UGX {(item.price * item.quantity).toLocaleString()}
+                    UGX {((Number.isFinite(item?.price) ? item.price : 0) * (Number.isFinite(item?.quantity) ? item.quantity : 0)).toLocaleString()}
                   </p>
                 </div>
               ))}
             </div>
             <div className="mt-4">
+              <h4 className="text-sm font-medium text-gray-900 mb-1">Delivery Information</h4>
+              <div className="mb-4 space-y-2">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700">Email Address</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="mt-1 w-full border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="your.email@example.com"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700">Phone Number</label>
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="mt-1 w-full border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="+256123456789"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700">Payment Method</label>
+                  <select
+                    value={paymentMethod}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className="mt-1 w-full border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  >
+                    <option value="">Select Payment Method</option>
+                    <option value="MTN Mobile Money">MTN Mobile Money</option>
+                    <option value="Airtel Mobile Money">Airtel Mobile Money</option>
+                    <option value="Cash on Delivery">Cash on Delivery</option>
+                  </select>
+                </div>
+                {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+              </div>
               <h4 className="text-sm font-medium text-gray-900 mb-1">Price Breakdown</h4>
               <div className="space-y-1">
                 <div className="flex justify-between text-sm">
@@ -619,17 +489,33 @@
                   </div>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span>VAT (18%):</span>
+                  <span>Delivery Fee:</span>
                   <div className="text-right">
-                    <span>UGX {vat.toLocaleString()}</span>
-                    <p className="text-xs text-gray-600">USD {vatUSD}</p>
+                    <span>UGX {totalDeliveryFee.toLocaleString()}</span>
+                    <p className="text-xs text-gray-600">USD {deliveryFeeUSD}</p>
                   </div>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span>Transport Fee:</span>
+                  <span>Service Fee:</span>
                   <div className="text-right">
-                    <span>UGX {totalTransport.toLocaleString()}</span>
-                    <p className="text-xs text-gray-600">USD {transportUSD}</p>
+                    <span>UGX {serviceFee.toLocaleString()}</span>
+                    <p className="text-xs text-gray-600">USD {serviceFeeUSD}</p>
+                  </div>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Tip:</span>
+                  <div className="text-right">
+                    <input
+                      type="number"
+                      min="0"
+                      value={tip}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value);
+                        setTip(isNaN(value) ? 0 : Math.max(0, value));
+                      }}
+                      className="w-20 border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                    <p className="text-xs text-gray-600">USD {tipUSD}</p>
                   </div>
                 </div>
                 <div className="flex justify-between text-lg font-semibold border-t pt-1">
@@ -662,13 +548,19 @@
 
     const MiniCart = ({ cart, removeFromCart, closeMiniCart, openCheckoutModal }) => {
       const exchangeRate = 0.00027;
-      const vatRate = 0.18;
-      const transportFee = 9000;
+      const deliveryFeePerItem = 1000;
+      const serviceFee = 500;
 
-      const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-      const vat = subtotal * vatRate;
-      const totalTransport = transportFee * cart.length;
-      const total = subtotal + vat + totalTransport;
+      // Safeguard for cart
+      const safeCart = Array.isArray(cart) ? cart : [];
+
+      const subtotal = safeCart.reduce((sum, item) => {
+        const price = Number.isFinite(item?.price) ? item.price : 0;
+        const quantity = Number.isFinite(item?.quantity) ? item.quantity : 0;
+        return sum + price * quantity;
+      }, 0);
+      const totalDeliveryFee = deliveryFeePerItem * safeCart.length;
+      const total = subtotal + totalDeliveryFee + serviceFee;
       const totalUSD = (total * exchangeRate).toFixed(2);
 
       return (
@@ -681,18 +573,20 @@
               </svg>
             </button>
           </div>
-          {cart.length === 0 ? (
+          {safeCart.length === 0 ? (
             <p className="text-gray-600 text-sm">Your cart is empty.</p>
           ) : (
             <>
-              {cart.map((item, index) => (
+              {safeCart.map((item, index) => (
                 <div key={index} className="flex items-center justify-between py-2 border-b">
                   <div className="flex items-center space-x-3">
-                    <img src={item.image} alt={item.title} className="w-12 h-12 object-contain rounded" />
+                    <img src={item?.image || 'https://via.placeholder.com/48'} alt={item?.title || 'Item'} className="w-12 h-12 object-contain rounded" />
                     <div>
-                      <h4 className="text-sm font-medium text-gray-900 truncate w-40">{item.title}</h4>
-                      {item.size && <p className="text-xs text-gray-600">Size: {item.size}</p>}
-                      <p className="text-xs text-gray-600">UGX {item.price.toLocaleString()} x {item.quantity}</p>
+                      <h4 className="text-sm font-medium text-gray-900 truncate w-40">{item?.title || 'Unknown Item'}</h4>
+                      {item?.size && <p className="text-xs text-gray-600">Size: {item.size}</p>}
+                      <p className="text-xs text-gray-600">
+                        UGX {(Number.isFinite(item?.price) ? item.price : 0).toLocaleString()} x {(Number.isFinite(item?.quantity) ? item.quantity : 0)}
+                      </p>
                     </div>
                   </div>
                   <button
@@ -729,32 +623,46 @@
 
     const MiniWishlist = ({ wishlist, toggleWishlist, products, closeMiniWishlist, addToCart, openVariationModal }) => {
       const exchangeRate = 0.00027;
-      const vatRate = 0.18;
-      const transportFee = 9000;
+      const deliveryFeePerItem = 1000;
+      const serviceFee = 500;
 
-      const wishlistItems = wishlist.map((title) => {
-        const product = Array.isArray(products.current)
-          ? products.current.find((p) => p && p.title === title)
-          : null;
-        return product || { title, priceUGX: 0, image: '' };
-      }).filter(Boolean);
+      // Safeguard for wishlist and products
+      const safeWishlist = Array.isArray(wishlist) ? wishlist : [];
+      const safeProducts = Array.isArray(products?.current) ? products.current : [];
+
+      const wishlistItems = safeWishlist
+        .map((title) => {
+          const product = safeProducts.find((p) => p?.title === title);
+          return product ? { ...product, title: product.title || title } : null;
+        })
+        .filter((item) => item !== null);
 
       const handleAddAllToCart = () => {
         let variationModalOpened = false;
         wishlistItems.forEach((item) => {
-          if (!variationModalOpened && item.variations && item.variations.length > 0) {
+          // Ensure item has necessary properties before proceeding
+          if (!item || !item.title) return;
+
+          if (
+            !variationModalOpened &&
+            Array.isArray(item.variations) &&
+            item.variations.length > 0
+          ) {
             openVariationModal({
               title: item.title,
-              price: item.priceUGX,
-              image: item.image,
+              price: Number.isFinite(item.priceUGX) ? item.priceUGX : 0,
+              image: item.image || 'https://via.placeholder.com/48',
               variations: item.variations
             });
             variationModalOpened = true;
-          } else if (item.priceUGX > 0 && (!item.variations || item.variations.length === 0)) {
+          } else if (
+            Number.isFinite(item.priceUGX) &&
+            (!Array.isArray(item.variations) || item.variations.length === 0)
+          ) {
             addToCart({
               title: item.title,
               price: item.priceUGX,
-              image: item.image
+              image: item.image || 'https://via.placeholder.com/48'
             });
           }
         });
@@ -774,27 +682,27 @@
               </svg>
             </button>
           </div>
-          {wishlist.length === 0 ? (
+          {wishlistItems.length === 0 ? (
             <p className="text-gray-600 text-sm">Your wishlist is empty.</p>
           ) : (
             <>
               {wishlistItems.map((item, index) => {
-                const priceWithVatAndTransport = item.priceUGX + (item.priceUGX * vatRate) + transportFee;
-                const priceUSD = (priceWithVatAndTransport * exchangeRate).toFixed(2);
+                const totalPrice = (Number.isFinite(item?.priceUGX) ? item.priceUGX : 0) + deliveryFeePerItem + serviceFee;
+                const priceUSD = (totalPrice * exchangeRate).toFixed(2);
                 return (
                   <div key={index} className="flex items-center justify-between py-2 border-b">
                     <div className="flex items-center space-x-3">
                       <img
-                        src={item.image || 'https://via.placeholder.com/48'}
-                        alt={item.title}
+                        src={item?.image || 'https://via.placeholder.com/48'}
+                        alt={item?.title || 'Item'}
                         className="w-12 h-12 object-contain rounded"
                       />
                       <div>
-                        <h4 className="text-sm font-medium text-gray-900 truncate w-40">{item.title}</h4>
-                        {item.priceUGX > 0 && (
+                        <h4 className="text-sm font-medium text-gray-900 truncate w-40">{item?.title || 'Unknown Item'}</h4>
+                        {Number.isFinite(item?.priceUGX) && item.priceUGX > 0 && (
                           <>
                             <p className="text-xs text-gray-600">
-                              UGX {priceWithVatAndTransport.toLocaleString()}
+                              UGX {totalPrice.toLocaleString()}
                             </p>
                             <p className="text-xs text-gray-600">
                               USD {priceUSD}
@@ -817,9 +725,9 @@
               })}
               <button
                 onClick={handleAddAllToCart}
-                disabled={wishlist.length === 0}
+                disabled={wishlistItems.length === 0}
                 className={`w-full bg-black text-white uppercase font-bold py-2 rounded-full transition text-sm mt-4 ${
-                  wishlist.length === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white hover:text-black hover:border hover:border-black'
+                  wishlistItems.length === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white hover:text-black hover:border hover:border-black'
                 }`}
               >
                 ADD TO CART
@@ -830,12 +738,9 @@
       );
     };
 
-    const Header = ({ cartItemCount, wishlistCount, searchQuery, handleSearchChange, clearSearch, cart, removeFromCart, isMiniCartOpen, toggleMiniCart, closeMiniCart, openCheckoutModal, wishlist, toggleWishlist, products, isMiniWishlistOpen, toggleMiniWishlist, closeMiniWishlist, addToCart, openVariationModal, openAddProductModal, openRemoveProductModal, categories, subcategories, setSelectedCategory, setSelectedSubcategory }) => {
+    const Header = ({ cartItemCount, wishlistCount, searchQuery, handleSearchChange, clearSearch, cart, removeFromCart, isMiniCartOpen, toggleMiniCart, closeMiniCart, openCheckoutModal, wishlist, toggleWishlist, products, isMiniWishlistOpen, toggleMiniWishlist, closeMiniWishlist, addToCart, openVariationModal, categories, subcategories, setSelectedCategory, setSelectedSubcategory }) => {
       const cartRef = React.useRef(null);
       const wishlistRef = React.useRef(null);
-      const logoRef = React.useRef(null);
-      const [logoClickCount, setLogoClickCount] = React.useState(0);
-      const [wishlistClickCount, setWishlistClickCount] = React.useState(0);
 
       useOutsideClick(cartRef, () => {
         if (isMiniCartOpen) closeMiniCart();
@@ -844,65 +749,30 @@
         if (isMiniWishlistOpen) closeMiniWishlist();
       });
 
-      const handleLogoClick = () => {
-        setLogoClickCount((prev) => {
-          const newCount = prev + 1;
-          if (newCount >= 10) {
-            openAddProductModal();
-            return 0;
-          }
-          return newCount;
-        });
-      };
-
-      const handleWishlistClick = () => {
-        setWishlistClickCount((prev) => {
-          const newCount = prev + 1;
-          if (newCount >= 10) {
-            openRemoveProductModal();
-            return 0;
-          }
-          return newCount;
-        });
-        toggleMiniWishlist(!isMiniWishlistOpen);
-        if (isMiniCartOpen) closeMiniCart();
-      };
-
       const handleKeyDown = (e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
         }
       };
 
+      // Safeguard for counts
+      const safeCartItemCount = Number.isFinite(cartItemCount) ? cartItemCount : 0;
+      const safeWishlistCount = Number.isFinite(wishlistCount) ? wishlistCount : 0;
+
       return (
         <header className="bg-gray-900 text-white sticky top-8 z-40">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
             <div className="flex items-center space-x-4 relative">
-              <h1
-                ref={logoRef}
-                className="text-2xl font-bold cursor-pointer"
-                onClick={handleLogoClick}
-              >
+              <h1 className="text-2xl font-bold">
                 aura
               </h1>
-              {logoClickCount >= 8 && (
-                <button
-                  onClick={openAddProductModal}
-                  className="absolute -top-2 -right-2 text-yellow-400 hover:text-yellow-600"
-                  title="Add New Product"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                  </svg>
-                </button>
-              )}
             </div>
             <div className="flex-1 mx-4">
               <div className="relative">
                 <input
                   type="text"
                   placeholder="Search products..."
-                  value={searchQuery}
+                  value={searchQuery || ''}
                   onChange={(e) => handleSearchChange(e.target.value)}
                   onKeyDown={handleKeyDown}
                   className="w-full py-2 pl-10 pr-10 rounded-full bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
@@ -937,13 +807,16 @@
               <a href="#" className="hover:text-yellow-400">Account</a>
               <div className="relative" ref={wishlistRef}>
                 <button
-                  onClick={handleWishlistClick}
+                  onClick={() => {
+                    toggleMiniWishlist(!isMiniWishlistOpen);
+                    if (isMiniCartOpen) closeMiniCart();
+                  }}
                   className="hover:text-yellow-400 relative focus:outline-none"
                 >
                   Wishlist
-                  {wishlistCount > 0 && (
+                  {safeWishlistCount > 0 && (
                     <span className="absolute -top-2 -right-2 bg-yellow-400 text-gray-900 text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                      {wishlistCount}
+                      {safeWishlistCount}
                     </span>
                   )}
                 </button>
@@ -967,9 +840,9 @@
                   className="hover:text-yellow-400 relative focus:outline-none"
                 >
                   Cart
-                  {cartItemCount > 0 && (
+                  {safeCartItemCount > 0 && (
                     <span className="absolute -top-2 -right-2 bg-yellow-400 text-gray-900 text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                      {cartItemCount}
+                      {safeCartItemCount}
                     </span>
                   )}
                 </button>
@@ -988,19 +861,17 @@
       );
     };
 
-    const ProductCard = ({ title, priceUGX, originalPriceUGX, discount, image, variations, openVariationModal, addToCart, toggleWishlist, isWishlisted, isOfficialStore, isRefurbished, isGlobal, isFreeShipping }) => {
+    const ProductCard = ({ title, priceUGX, originalPriceUGX, discount, image, variations, openVariationModal, addToCart, toggleWishlist, isWishlisted, isOfficialStore, isRefurbished, isGlobal, isFreeShipping, openDetailsPopup, category, subcategory }) => {
       const exchangeRate = 0.00027;
-      const vatRate = 0.18;
-      const transportFee = 9000;
-
-      const priceWithVatAndTransport = priceUGX + (priceUGX * vatRate) + transportFee;
-      const originalPriceWithVatAndTransport = originalPriceUGX ? originalPriceUGX + (originalPriceUGX * vatRate) + transportFee : null;
-      const priceUSD = (priceWithVatAndTransport * exchangeRate).toFixed(2);
+      const priceUSD = Number.isFinite(priceUGX) ? (priceUGX * exchangeRate).toFixed(2) : '0.00';
+      const originalPriceUSD = Number.isFinite(originalPriceUGX) ? (originalPriceUGX * exchangeRate).toFixed(2) : null;
 
       return (
         <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
           <div className="relative">
-            <img src={image} alt={title} className="w-full h-48 object-contain" />
+            <button onClick={openDetailsPopup} className="w-full">
+              <img src={image || 'https://via.placeholder.com/300'} alt={title || 'Product'} className="w-full h-48 object-contain" />
+            </button>
             <button
               onClick={() => toggleWishlist(title)}
               className={`absolute top-2 right-2 w-5 h-5 ${
@@ -1014,7 +885,7 @@
                 />
               </svg>
             </button>
-            {discount && (
+            {Number.isFinite(discount) && discount > 0 && (
               <span className="absolute top-2 left-2 bg-orange-500 text-white text-xs font-bold py-1 px-2 rounded">
                 -{discount}%
               </span>
@@ -1036,14 +907,14 @@
             )}
           </div>
           <div className="p-2">
-            <h3 className="text-sm text-gray-900 truncate">{title}</h3>
+            <h3 className="text-sm text-gray-900 truncate">{title || 'Unknown Product'}</h3>
             <div className="flex items-center justify-between mt-1">
               <p className="text-base font-semibold text-gray-900">
-                UGX {priceWithVatAndTransport.toLocaleString()}
+                UGX {(Number.isFinite(priceUGX) ? priceUGX : 0).toLocaleString()}
               </p>
-              {originalPriceWithVatAndTransport && (
+              {Number.isFinite(originalPriceUGX) && originalPriceUGX > 0 && (
                 <p className="text-sm text-gray-500 line-through">
-                  UGX {originalPriceWithVatAndTransport.toLocaleString()}
+                  UGX {originalPriceUGX.toLocaleString()}
                 </p>
               )}
             </div>
@@ -1062,7 +933,7 @@
             )}
             <button
               onClick={() => {
-                if (variations && variations.length > 0) {
+                if (Array.isArray(variations) && variations.length > 0) {
                   openVariationModal({ title, price: priceUGX, image, variations });
                 } else {
                   addToCart({ title, price: priceUGX, image });
@@ -1077,19 +948,19 @@
       );
     };
 
-    const ProductGrid = ({ openVariationModal, addToCart, toggleWishlist, wishlist, searchQuery, products, selectedCategory, selectedSubcategory }) => {
-      const filteredProducts = (Array.isArray(products.current) ? products.current : []).filter((product) => {
+    const ProductGrid = ({ openVariationModal, addToCart, toggleWishlist, wishlist, searchQuery, products, selectedCategory, selectedSubcategory, openDetailsPopup }) => {
+      const filteredProducts = (Array.isArray(products?.current) ? products.current : []).filter((product) => {
         let matches = true;
         if (selectedCategory) {
-          matches = matches && product.category === selectedCategory;
+          matches = matches && product?.category === selectedCategory;
         }
         if (selectedSubcategory) {
-          matches = matches && product.subcategory === selectedSubcategory;
+          matches = matches && product?.subcategory === selectedSubcategory;
         }
         if (searchQuery) {
-          matches = matches && product.title.toLowerCase().includes(searchQuery.toLowerCase());
+          matches = matches && product?.title?.toLowerCase()?.includes(searchQuery.toLowerCase());
         }
-        return matches;
+        return matches && product; // Ensure product is not null/undefined
       });
 
       return (
@@ -1103,7 +974,8 @@
                   openVariationModal={openVariationModal}
                   addToCart={addToCart}
                   toggleWishlist={toggleWishlist}
-                  isWishlisted={wishlist.includes(product.title)}
+                  isWishlisted={Array.isArray(wishlist) && wishlist.includes(product.title)}
+                  openDetailsPopup={() => openDetailsPopup(product)}
                 />
               ))
             ) : (
@@ -1124,18 +996,32 @@
       const [isMiniWishlistOpen, setIsMiniWishlistOpen] = React.useState(false);
       const [variationModalProduct, setVariationModalProduct] = React.useState(null);
       const [isCheckoutModalOpen, setIsCheckoutModalOpen] = React.useState(false);
-      const [isAddProductModalOpen, setIsAddProductModalOpen] = React.useState(false);
-      const [isRemoveProductModalOpen, setIsRemoveProductModalOpen] = React.useState(false);
       const [selectedCategory, setSelectedCategory] = React.useState(null);
       const [selectedSubcategory, setSelectedSubcategory] = React.useState(null);
+      const [detailsPopupProduct, setDetailsPopupProduct] = React.useState(null);
       const productsRef = React.useRef([]);
 
       React.useEffect(() => {
+        const vatRate = 0.18;
+        const transportFee = 10000;
+
+        const applyVatAndTransport = (basePrice) => {
+          const priceWithVat = basePrice * (1 + vatRate);
+          return Math.round(priceWithVat + transportFee);
+        };
+
+        const applyVatAndTransportToOriginal = (basePrice, discount) => {
+          if (!discount) return undefined;
+          const originalBasePrice = Math.round(basePrice / (1 - discount / 100));
+          const originalPriceWithVat = originalBasePrice * (1 + vatRate);
+          return Math.round(originalPriceWithVat + transportFee);
+        };
+
         productsRef.current = [
           {
             title: "SPJ 4 Litres, Hot Air Fryer",
-            priceUGX: 999400,
-            originalPriceUGX: 1400000,
+            priceUGX: applyVatAndTransport(999400),
+            originalPriceUGX: applyVatAndTransportToOriginal(999400, 29),
             discount: 29,
             image: "https://images.unsplash.com/photo-1630312481381-2d4a53a52db0?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
             isOfficialStore: true,
@@ -1148,8 +1034,8 @@
           },
           {
             title: "Apple iPad 3 16GB Wi-Fi",
-            priceUGX: 299000,
-            originalPriceUGX: 700000,
+            priceUGX: applyVatAndTransport(299000),
+            originalPriceUGX: applyVatAndTransportToOriginal(299000, 57),
             discount: 57,
             image: "https://images.unsplash.com/photo-1511707171634-5f89772885ad?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
             isOfficialStore: true,
@@ -1162,8 +1048,8 @@
           },
           {
             title: "Floral Summer Dress",
-            priceUGX: 120000,
-            originalPriceUGX: 150000,
+            priceUGX: applyVatAndTransport(120000),
+            originalPriceUGX: applyVatAndTransportToOriginal(120000, 20),
             discount: 20,
             image: "https://images.unsplash.com/photo-1594633312681-47ce7a3f956b?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
             isOfficialStore: false,
@@ -1176,8 +1062,8 @@
           },
           {
             title: "Curve Denim Jacket",
-            priceUGX: 180000,
-            originalPriceUGX: 220000,
+            priceUGX: applyVatAndTransport(180000),
+            originalPriceUGX: applyVatAndTransportToOriginal(180000, 18),
             discount: 18,
             image: "https://images.unsplash.com/photo-1608063615781-e2dce9033eb9?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
             isOfficialStore: false,
@@ -1190,8 +1076,8 @@
           },
           {
             title: "Nike Air Max 90",
-            priceUGX: 134000,
-            originalPriceUGX: 167500,
+            priceUGX: applyVatAndTransport(134000),
+            originalPriceUGX: applyVatAndTransportToOriginal(134000, 20),
             discount: 20,
             image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
             isOfficialStore: true,
@@ -1204,8 +1090,8 @@
           },
           {
             title: "Gold Necklace",
-            priceUGX: 250000,
-            originalPriceUGX: 300000,
+            priceUGX: applyVatAndTransport(250000),
+            originalPriceUGX: applyVatAndTransportToOriginal(250000, 17),
             discount: 17,
             image: "https://images.unsplash.com/photo-1611652022419-a6b3c9319c5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
             isOfficialStore: false,
@@ -1218,8 +1104,8 @@
           },
           {
             title: "Men's Casual Shirt",
-            priceUGX: 100000,
-            originalPriceUGX: 130000,
+            priceUGX: applyVatAndTransport(100000),
+            originalPriceUGX: applyVatAndTransportToOriginal(100000, 23),
             discount: 23,
             image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
             isOfficialStore: false,
@@ -1232,8 +1118,8 @@
           },
           {
             title: "Kids Sneakers",
-            priceUGX: 80000,
-            originalPriceUGX: 100000,
+            priceUGX: applyVatAndTransport(80000),
+            originalPriceUGX: applyVatAndTransportToOriginal(80000, 20),
             discount: 20,
             image: "https://images.unsplash.com/photo-1597045566897-1a5c4d25a6c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
             isOfficialStore: true,
@@ -1348,7 +1234,7 @@
       };
 
       const handleSearchChange = debounce((value) => {
-        setSearchQuery(value);
+        setSearchQuery(value || '');
       }, 300);
 
       const clearSearch = () => {
@@ -1356,37 +1242,46 @@
       };
 
       const addToCart = (product) => {
+        if (!product || !product.title) return;
         setCart((prevCart) => {
-          const existingItemIndex = prevCart.findIndex(
-            (item) => item.title === product.title && item.size === product.size
+          const safeCart = Array.isArray(prevCart) ? prevCart : [];
+          const existingItemIndex = safeCart.findIndex(
+            (item) => item?.title === product.title && item?.size === product.size
           );
           if (existingItemIndex >= 0) {
-            const newCart = [...prevCart];
-            newCart[existingItemIndex].quantity += 1;
+            const newCart = [...safeCart];
+            newCart[existingItemIndex] = {
+              ...newCart[existingItemIndex],
+              quantity: (Number.isFinite(newCart[existingItemIndex]?.quantity) ? newCart[existingItemIndex].quantity : 0) + 1
+            };
             return newCart;
           }
-          return [...prevCart, { ...product, quantity: 1 }];
+          return [...safeCart, { ...product, quantity: 1 }];
         });
       };
 
       const removeFromCart = (index) => {
-        setCart((prevCart) => prevCart.filter((_, i) => i !== index));
+        setCart((prevCart) => {
+          const safeCart = Array.isArray(prevCart) ? prevCart : [];
+          return safeCart.filter((_, i) => i !== index);
+        });
       };
 
       const toggleWishlist = (title) => {
         if (Array.isArray(title)) {
           setWishlist([]);
-        } else {
-          setWishlist((prevWishlist) =>
-            prevWishlist.includes(title)
-              ? prevWishlist.filter((item) => item !== title)
-              : [...prevWishlist, title]
-          );
+        } else if (typeof title === 'string' && title.trim()) {
+          setWishlist((prevWishlist) => {
+            const safeWishlist = Array.isArray(prevWishlist) ? prevWishlist : [];
+            return safeWishlist.includes(title)
+              ? safeWishlist.filter((item) => item !== title)
+              : [...safeWishlist, title];
+          });
         }
       };
 
       const toggleMiniCart = (isOpen) => {
-        setIsMiniCartOpen(isOpen);
+        setIsMiniCartOpen(!!isOpen);
       };
 
       const closeMiniCart = () => {
@@ -1394,7 +1289,7 @@
       };
 
       const toggleMiniWishlist = (isOpen) => {
-        setIsMiniWishlistOpen(isOpen);
+        setIsMiniWishlistOpen(!!isOpen);
       };
 
       const closeMiniWishlist = () => {
@@ -1402,7 +1297,9 @@
       };
 
       const openVariationModal = (product) => {
-        setVariationModalProduct(product);
+        if (product) {
+          setVariationModalProduct(product);
+        }
       };
 
       const closeVariationModal = () => {
@@ -1418,28 +1315,14 @@
         setIsCheckoutModalOpen(false);
       };
 
-      const openAddProductModal = () => {
-        setIsAddProductModalOpen(true);
+      const openDetailsPopup = (product) => {
+        if (product) {
+          setDetailsPopupProduct(product);
+        }
       };
 
-      const closeAddProductModal = () => {
-        setIsAddProductModalOpen(false);
-      };
-
-      const openRemoveProductModal = () => {
-        setIsRemoveProductModalOpen(true);
-      };
-
-      const closeRemoveProductModal = () => {
-        setIsRemoveProductModalOpen(false);
-      };
-
-      const handleAddProduct = (product) => {
-        productsRef.current = [...productsRef.current, product];
-      };
-
-      const handleRemoveProduct = (title) => {
-        productsRef.current = productsRef.current.filter((product) => product.title !== title);
+      const closeDetailsPopup = () => {
+        setDetailsPopupProduct(null);
       };
 
       const handleCheckoutConfirm = () => {
@@ -1447,8 +1330,10 @@
         setCart([]);
       };
 
-      const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-      const wishlistCount = wishlist.length;
+      const cartItemCount = (Array.isArray(cart) ? cart : []).reduce((sum, item) => {
+        return sum + (Number.isFinite(item?.quantity) ? item.quantity : 0);
+      }, 0);
+      const wishlistCount = (Array.isArray(wishlist) ? wishlist : []).length;
 
       return (
         <ErrorBoundary>
@@ -1474,28 +1359,12 @@
               closeMiniWishlist={closeMiniWishlist}
               addToCart={addToCart}
               openVariationModal={openVariationModal}
-              openAddProductModal={openAddProductModal}
-              openRemoveProductModal={openRemoveProductModal}
               categories={categories}
               subcategories={subcategories}
               setSelectedCategory={setSelectedCategory}
               setSelectedSubcategory={setSelectedSubcategory}
             />
-            <CategoryFilters
-              categories={categories}
-              subcategories={subcategories}
-              selectedCategory={selectedCategory}
-              selectedSubcategory={selectedSubcategory}
-              setSelectedCategory={setSelectedCategory}
-              setSelectedSubcategory={setSelectedSubcategory}
-            />
-            <SaleProductsSection
-              products={productsRef}
-              openVariationModal={openVariationModal}
-              addToCart={addToCart}
-              toggleWishlist={toggleWishlist}
-              wishlist={wishlist}
-            />
+            <Banner />
             <div className="flex">
               <div className="flex-1">
                 <ProductGrid
@@ -1507,9 +1376,17 @@
                   products={productsRef}
                   selectedCategory={selectedCategory}
                   selectedSubcategory={selectedSubcategory}
+                  openDetailsPopup={openDetailsPopup}
                 />
               </div>
             </div>
+            <SaleProductsSection
+              products={productsRef}
+              openVariationModal={openVariationModal}
+              addToCart={addToCart}
+              toggleWishlist={toggleWishlist}
+              wishlist={wishlist}
+            />
             {variationModalProduct && (
               <VariationModal
                 product={variationModalProduct}
@@ -1524,17 +1401,10 @@
                 onClose={closeCheckoutModal}
               />
             )}
-            {isAddProductModalOpen && (
-              <AddProductModal
-                onAddProduct={handleAddProduct}
-                onClose={closeAddProductModal}
-              />
-            )}
-            {isRemoveProductModalOpen && (
-              <RemoveProductModal
-                products={productsRef.current}
-                onRemoveProduct={handleRemoveProduct}
-                onClose={closeRemoveProductModal}
+            {detailsPopupProduct && (
+              <ProductDetailsPopup
+                product={detailsPopupProduct}
+                onClose={closeDetailsPopup}
               />
             )}
           </div>
