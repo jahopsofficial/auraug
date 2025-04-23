@@ -25,11 +25,8 @@
     function useOutsideClick(ref, callback) {
       React.useEffect(() => {
         const handleClickOutside = (event) => {
-          if (ref.current && !ref.current.contains(event.target) && (event.type === 'mousedown' || event.type === 'touchstart')) {
-            const isScrollClick = event.target.closest('[style*="overflow-y: auto"]');
-            if (!isScrollClick) {
-              callback();
-            }
+          if (ref.current && !ref.current.contains(event.target)) {
+            callback();
           }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -74,7 +71,7 @@
       return (
         <div className="w-full bg-gray-200">
           <img
-            src="https://i.ibb.co/twC37Tky/Exp-Storefront-CTA-Banner-DT-03-3000x400-1.jpg"
+            src="https://i.ibb.co/twC37Tk/Exp-Storefront-CTA-Banner-DT-03-3000x400-1.jpg"
             alt="Promotional Banner"
             className="w-full h-48 sm:h-64 md:h-80 object-cover"
             onError={(e) => {
@@ -96,7 +93,6 @@
         setOpenCategory(openCategory === category ? null : category);
       };
 
-      // Safeguard for categories and subcategories
       const safeCategories = Array.isArray(categories) ? categories : [];
       const safeSubcategories = subcategories || {};
 
@@ -105,6 +101,8 @@
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="flex items-center text-white hover:text-yellow-400 focus:outline-none text-sm sm:text-base"
+            aria-expanded={isOpen}
+            aria-controls="category-menu"
           >
             Categories
             <svg
@@ -117,7 +115,7 @@
             </svg>
           </button>
           {isOpen && (
-            <div className="absolute left-0 mt-2 w-48 sm:w-64 bg-white rounded-lg shadow-lg z-50 p-3 sm:p-4 max-h-80 sm:max-h-96 overflow-y-auto">
+            <div id="category-menu" className="absolute left-0 mt-2 w-48 sm:w-64 bg-white rounded-lg shadow-lg z-50 p-3 sm:p-4 max-h-80 sm:max-h-96 overflow-y-auto">
               <ul className="space-y-1 sm:space-y-2">
                 {safeCategories.map((category) => (
                   <li key={category}>
@@ -136,6 +134,7 @@
                         <button
                           onClick={() => toggleCategory(category)}
                           className="text-gray-500 hover:text-purple-600 focus:outline-none"
+                          aria-label={`Toggle ${category} subcategories`}
                         >
                           <svg
                             className={`w-3 h-3 sm:w-4 sm:h-4 transform transition-transform ${
@@ -220,7 +219,6 @@
         onClose();
       };
 
-      // Safeguard for product and variations
       if (!product || !Array.isArray(product.variations)) {
         return null;
       }
@@ -274,7 +272,6 @@
 
       useOutsideClick(modalRef, onClose);
 
-      // Safeguard for product
       if (!product) {
         return null;
       }
@@ -289,7 +286,7 @@
           <div ref={modalRef} className="bg-white rounded-lg shadow-lg p-3 sm:p-4 max-w-sm sm:max-w-md w-full">
             <div className="flex justify-between items-center mb-3 sm:mb-4">
               <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">{product.title || 'Unknown Product'}</h3>
-              <button onClick={onClose} className="text-gray-600 hover:text-gray-900">
+              <button onClick={onClose} className="text-gray-600 hover:text-gray-900" aria-label="Close">
                 <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -350,7 +347,6 @@
 
       useOutsideClick(modalRef, onClose);
 
-      // Safeguard for cart
       const safeCart = Array.isArray(cart) ? cart : [];
 
       const subtotal = safeCart.reduce((sum, item) => {
@@ -551,7 +547,6 @@
       const deliveryFeePerItem = 1000;
       const serviceFee = 500;
 
-      // Safeguard for cart
       const safeCart = Array.isArray(cart) ? cart : [];
 
       const subtotal = safeCart.reduce((sum, item) => {
@@ -567,8 +562,8 @@
         <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-white rounded-lg shadow-lg z-50 p-3 sm:p-4 max-h-80 sm:max-h-96 overflow-y-auto">
           <div className="flex justify-between items-center mb-3 sm:mb-4">
             <h3 className="text-base sm:text-lg font-semibold text-gray-900">Your Cart</h3>
-            <button onClick={closeMiniCart} className="text-gray-600 hover:text-gray-900">
-              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button onClick={closeMiniCart} className="text-gray-600 hover:text-gray-900" aria-label="Close">
+              <svg className="w-4 h-4 sm:w-amicin-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -626,7 +621,6 @@
       const deliveryFeePerItem = 1000;
       const serviceFee = 500;
 
-      // Safeguard for wishlist and products
       const safeWishlist = Array.isArray(wishlist) ? wishlist : [];
       const safeProducts = Array.isArray(products?.current) ? products.current : [];
 
@@ -640,7 +634,6 @@
       const handleAddAllToCart = () => {
         let variationModalOpened = false;
         wishlistItems.forEach((item) => {
-          // Ensure item has necessary properties before proceeding
           if (!item || !item.title) return;
 
           if (
@@ -676,7 +669,7 @@
         <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-white rounded-lg shadow-lg z-50 p-3 sm:p-4 max-h-80 sm:max-h-96 overflow-y-auto">
           <div className="flex justify-between items-center mb-3 sm:mb-4">
             <h3 className="text-base sm:text-lg font-semibold text-gray-900">Your Wishlist</h3>
-            <button onClick={closeMiniWishlist} className="text-gray-600 hover:text-gray-900">
+            <button onClick={closeMiniWishlist} className="text-gray-600 hover:text-gray-900" aria-label="Close">
               <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -755,7 +748,6 @@
         }
       };
 
-      // Safeguard for counts
       const safeCartItemCount = Number.isFinite(cartItemCount) ? cartItemCount : 0;
       const safeWishlistCount = Number.isFinite(wishlistCount) ? wishlistCount : 0;
 
@@ -781,6 +773,7 @@
                         if (isMiniCartOpen) closeMiniCart();
                       }}
                       className="hover:text-yellow-400 relative focus:outline-none text-sm"
+                      aria-label={`Wishlist with ${safeWishlistCount} items`}
                     >
                       Wishlist
                       {safeWishlistCount > 0 && (
@@ -807,6 +800,7 @@
                         if (isMiniWishlistOpen) closeMiniWishlist();
                       }}
                       className="hover:text-yellow-400 relative focus:outline-none text-sm"
+                      aria-label={`Cart with ${safeCartItemCount} items`}
                     >
                       Cart
                       {safeCartItemCount > 0 && (
@@ -835,6 +829,7 @@
                     onChange={(e) => handleSearchChange(e.target.value)}
                     onKeyDown={handleKeyDown}
                     className="w-full py-1 sm:py-2 pl-8 sm:pl-10 pr-8 sm:pr-10 rounded-full bg-gray-800 text-white text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+                    aria-label="Search products"
                   />
                   <svg
                     className="w-4 h-4 sm:w-5 sm:h-5 absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
@@ -848,6 +843,7 @@
                     <button
                       onClick={clearSearch}
                       className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                      aria-label="Clear search"
                     >
                       <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -871,6 +867,7 @@
                       if (isMiniCartOpen) closeMiniCart();
                     }}
                     className="hover:text-yellow-400 relative focus:outline-none text-sm sm:text-base"
+                    aria-label={`Wishlist with ${safeWishlistCount} items`}
                   >
                     Wishlist
                     {safeWishlistCount > 0 && (
@@ -897,6 +894,7 @@
                       if (isMiniWishlistOpen) closeMiniWishlist();
                     }}
                     className="hover:text-yellow-400 relative focus:outline-none text-sm sm:text-base"
+                    aria-label={`Cart with ${safeCartItemCount} items`}
                   >
                     Cart
                     {safeCartItemCount > 0 && (
@@ -929,7 +927,7 @@
       return (
         <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
           <div className="relative">
-            <button onClick={openDetailsPopup} className="w-full">
+            <button onClick={openDetailsPopup} className="w-full" aria-label={`View details for ${title}`}>
               <img src={image || 'https://via.placeholder.com/300'} alt={title || 'Product'} className="w-full h-40 sm:h-48 object-contain" />
             </button>
             <button
@@ -966,7 +964,7 @@
               </span>
             )}
           </div>
-          <div className="p-2 sm:p-3">
+          <div className="p-2 sm:pl-3">
             <h3 className="text-xs sm:text-sm text-gray-900 truncate">{title || 'Unknown Product'}</h3>
             <div className="flex items-center justify-between mt-1">
               <p className="text-sm sm:text-base font-semibold text-gray-900">
@@ -1020,7 +1018,7 @@
         if (searchQuery) {
           matches = matches && product?.title?.toLowerCase()?.includes(searchQuery.toLowerCase());
         }
-        return matches && product; // Ensure product is not null/undefined
+        return matches && product;
       });
 
       return (
