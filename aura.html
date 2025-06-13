@@ -8,23 +8,44 @@
   <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.20.15/babel.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    /* Ensure smooth transitions and hide raw content until React loads */
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: #f7f7f7;
+    }
+    .product-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    .category-menu-item:hover {
+      background-color: #f1f5f9;
+      color: #ff6f61;
+    }
+    .cart-wishlist:hover {
+      transform: scale(1.1);
+      color: #ff6f61;
+    }
+    .badge-pulse {
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
     #root:not(.loaded) > *:not(#loading) {
       display: none;
     }
-    /* Center loading spinner */
     #loading {
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      background-color: #f3f4f6;
     }
-    /* Spinner animation */
     .spinner {
       border: 4px solid #e5e7eb;
-      border-top: 4px solid #8b5cf6;
+      border-top: 4px solid #ff6f61;
       border-radius: 50%;
       width: 40px;
       height: 40px;
@@ -43,10 +64,8 @@
     </div>
   </div>
   <script type="text/babel">
-    // Add loaded class to root once React renders
     document.getElementById('root').classList.add('loaded');
 
-    // Debounce utility function
     const debounce = (func, delay) => {
       let timeoutId;
       return (...args) => {
@@ -55,7 +74,6 @@
       };
     };
 
-    // Click-outside hook
     function useOutsideClick(ref, callback) {
       React.useEffect(() => {
         const handleClickOutside = (event) => {
@@ -72,49 +90,22 @@
       }, [ref, callback]);
     }
 
-    // Error Boundary Component
-    class ErrorBoundary extends React.Component {
-      state = { hasError: false };
+    const FreeShippingBanner = () => (
+      <div className="fixed top-0 w-full bg-gradient-to-r from-[#ff6f61] to-[#ffb700] text-white text-sm font-medium text-center py-2 z-50">
+        FREE SHIPPING FOR ORDERS ABOVE 100,000
+      </div>
+    );
 
-      static getDerivedStateFromError(error) {
-        return { hasError: true };
-      }
-
-      render() {
-        if (this.state.hasError) {
-          return (
-            <div className="max-w-7xl mx-auto px-4 py-8 text-center">
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Something went wrong.</h2>
-              <p className="text-sm sm:text-base text-gray-600 mt-2">Please refresh the page or try again later.</p>
-            </div>
-          );
-        }
-        return this.props.children;
-      }
-    }
-
-    const FreeShippingBanner = () => {
-      return (
-        <div className="fixed top-0 w-full bg-black text-white text-xs sm:text-sm font-bold text-center py-1 sm:py-2 z-50">
-          FREE SHIPPING FOR ORDERS ABOVE 100,000
-        </div>
-      );
-    };
-
-    const SecondaryBanner = () => {
-      return (
-        <div className="w-full bg-gray-200">
-          <img
-            src="https://i.postimg.cc/FH7mw6Mk/Green-and-Yellow-Simple-Clean-Shoes-Sale-Banner-1.png"
-            alt="Shoes Sale Banner"
-            className="w-full h-48 sm:h-64 md:h-80 lg:h-96 object-cover"
-            onError={(e) => {
-              e.target.src = 'https://via.placeholder.com/1200x300?text=Banner+Image+Not+Found';
-            }}
-          />
-        </div>
-      );
-    };
+    const SecondaryBanner = () => (
+      <div className="w-full bg-gray-200">
+        <img
+          src="https://i.postimg.cc/FH7mw6Mk/Green-and-Yellow-Simple-Clean-Shoes-Sale-Banner-1.png"
+          alt="Shoes Sale Banner"
+          className="w-full h-48 sm:h-64 object-cover"
+          onError={(e) => { e.target.src = 'https://via.placeholder.com/1200x300?text=Banner+Image'; }}
+        />
+      </div>
+    );
 
     const CategoryMenu = ({ categories, subcategories, setSelectedCategory, setSelectedSubcategory }) => {
       const [isOpen, setIsOpen] = React.useState(false);
@@ -127,31 +118,21 @@
         setOpenCategory(openCategory === category ? null : category);
       };
 
-      const safeCategories = Array.isArray(categories) ? categories : [];
-      const safeSubcategories = subcategories || {};
-
       return (
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="flex items-center text-white hover:text-yellow-400 focus:outline-none text-sm sm:text-base"
-            aria-expanded={isOpen}
-            aria-controls="category-menu"
+            className="flex items-center text-white hover:text-[#ff6f61] text-sm font-medium transition"
           >
             Categories
-            <svg
-              className={`w-4 h-4 ml-1 sm:ml-2 transform transition-transform ${isOpen ? 'rotate-180' : ''}`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className={`w-4 h-4 ml-2 transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
             </svg>
           </button>
           {isOpen && (
-            <div id="category-menu" className="absolute left-0 mt-2 w-48 sm:w-64 bg-white rounded-lg shadow-lg z-50 p-3 sm:p-4 max-h-80 sm:max-h-96 overflow-y-auto">
-              <ul className="space-y-1 sm:space-y-2">
-                {safeCategories.map((category) => (
+            <div className="absolute left-0 mt-2 w-64 bg-white rounded-lg shadow-xl z-50 p-4 max-h-96 overflow-y-auto border">
+              <ul className="space-y-2">
+                {categories.map((category) => (
                   <li key={category}>
                     <div className="flex items-center justify-between">
                       <button
@@ -160,32 +141,24 @@
                           setSelectedSubcategory(null);
                           toggleCategory(category);
                         }}
-                        className="flex-1 text-left text-xs sm:text-sm font-bold text-gray-900 hover:text-purple-600"
+                        className="category-menu-item flex-1 text-left text-sm font-semibold text-gray-900 transition rounded px-2 py-1"
                       >
                         {category}
                       </button>
-                      {Array.isArray(safeSubcategories[category]) && safeSubcategories[category].length > 0 && (
+                      {subcategories[category]?.length > 0 && (
                         <button
                           onClick={() => toggleCategory(category)}
-                          className="text-gray-500 hover:text-purple-600 focus:outline-none"
-                          aria-label={`Toggle ${category} subcategories`}
+                          className="text-gray-500 hover:text-[#ff6f61]"
                         >
-                          <svg
-                            className={`w-3 h-3 sm:w-4 sm:h-4 transform transition-transform ${
-                              openCategory === category ? 'rotate-90' : ''
-                            }`}
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
+                          <svg className={`w-4 h-4 ${openCategory === category ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
                           </svg>
                         </button>
                       )}
                     </div>
-                    {Array.isArray(safeSubcategories[category]) && safeSubcategories[category].length > 0 && openCategory === category && (
-                      <ul className="mt-1 ml-2 sm:ml-3 space-y-1">
-                        {safeSubcategories[category].map((subcategory) => (
+                    {subcategories[category]?.length > 0 && openCategory === category && (
+                      <ul className="mt-1 ml-3 space-y-1">
+                        {subcategories[category].map((subcategory) => (
                           <li key={subcategory.name}>
                             <button
                               onClick={() => {
@@ -193,7 +166,7 @@
                                 setSelectedSubcategory(subcategory.name);
                                 setIsOpen(false);
                               }}
-                              className="text-xs sm:text-sm text-gray-600 hover:text-purple-600"
+                              className="category-menu-item text-sm text-gray-600 transition rounded px-2 py-1"
                             >
                               {subcategory.name}
                             </button>
@@ -211,22 +184,23 @@
     };
 
     const SaleProductsSection = ({ products, openVariationModal, addToCart, toggleWishlist, wishlist }) => {
-      const saleProducts = (Array.isArray(products?.current) ? products.current : []).filter((product) => product?.discount);
+      const saleProducts = products.current.filter((product) => product?.discount);
 
       if (!saleProducts.length) return null;
 
       return (
-        <div className="max-w-full mx-auto px-2 sm:px-4 lg:px-8 py-6 sm:py-8">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">Products on Sale</h2>
-          <div className="flex overflow-x-auto space-x-3 sm:space-x-4 pb-4 snap-x snap-mandatory">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <h2 className="text-2xl font-semibold text-gray-900 mb-4">Hot Deals</h2>
+          <div className="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory">
             {saleProducts.map((product, index) => (
-              <div key={index} className="flex-shrink-0 w-56 sm:w-64 snap-start">
+              <div key={index} className="flex-shrink-0 w-64 snap-start">
                 <ProductCard
                   {...product}
                   openVariationModal={openVariationModal}
                   addToCart={addToCart}
                   toggleWishlist={toggleWishlist}
-                  isWishlisted={Array.isArray(wishlist) && wishlist.includes(product.title)}
+                  isWishlisted={wishlist.includes(product.title)}
+                  openDetailsPopup={() => openDetailsPopup(product)}
                 />
               </div>
             ))}
@@ -253,44 +227,40 @@
         onClose();
       };
 
-      if (!product || !Array.isArray(product.variations)) {
-        return null;
-      }
+      if (!product || !Array.isArray(product.variations)) return null;
 
       return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-2 sm:px-0">
-          <div ref={modalRef} className="bg-white rounded-lg shadow-lg p-3 sm:p-4 max-w-sm sm:max-w-md w-full">
-            <div className="flex items-center space-x-3 sm:space-x-4 mb-3 sm:mb-4">
-              <img src={product.image || 'https://via.placeholder.com/64'} alt={product.title || 'Product'} className="w-12 h-12 sm:w-16 sm:h-16 object-contain rounded" />
-              <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">{product.title || 'Unknown Product'}</h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+          <div ref={modalRef} className="bg-white rounded-lg shadow-lg p-4 max-w-md w-full">
+            <div className="flex items-center space-x-4 mb-4">
+              <img src={product.image || 'https://via.placeholder.com/64'} alt={product.title} className="w-16 h-16 object-contain rounded" />
+              <h3 className="text-lg font-semibold text-gray-900 truncate">{product.title}</h3>
             </div>
-            <div className="mb-3 sm:mb-4">
-              <h4 className="text-xs sm:text-sm font-medium text-gray-900 mb-1 sm:mb-2">{isTablet ? "Select Storage & RAM" : "Select Size"}</h4>
-              <div className="flex flex-wrap gap-1 sm:gap-2">
+            <div className="mb-4">
+              <h4 className="text-sm font-medium text-gray-900 mb-2">{isTablet ? "Select Storage & RAM" : "Select Size"}</h4>
+              <div className="flex flex-wrap gap-2">
                 {product.variations.map((size) => (
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
-                    className={`border border-gray-300 px-3 py-1 sm:px-4 sm:py-2 rounded-md text-xs sm:text-sm font-medium ${
-                      selectedSize === size ? 'bg-purple-500 text-white' : 'bg-white text-gray-900 hover:bg-gray-100'
-                    }`}
+                    className={`border px-4 py-2 rounded-md text-sm ${selectedSize === size ? 'bg-[#ff6f61] text-white' : 'bg-white text-gray-900 hover:bg-gray-100'}`}
                   >
                     {size}
                   </button>
                 ))}
               </div>
-              {error && <p className="text-red-500 text-xs sm:text-sm mt-1 sm:mt-2">{error}</p>}
+              {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
             </div>
-            <div className="flex justify-end space-x-3 sm:space-x-4">
+            <div className="flex justify-end space-x-4">
               <button
                 onClick={onClose}
-                className="bg-gray-300 text-gray-900 uppercase font-bold py-1 px-3 sm:py-2 sm:px-4 rounded-full hover:bg-gray-400 transition text-xs sm:text-sm"
+                className="bg-gray-300 text-gray-900 font-medium py-2 px-4 rounded-full hover:bg-gray-400 text-sm"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAddToCart}
-                className="bg-purple-500 text-white uppercase font-bold py-1 px-3 sm:py-2 sm:px-4 rounded-full hover:bg-purple-600 transition text-xs sm:text-sm"
+                className="bg-[#ff6f61] text-white font-medium py-2 px-4 rounded-full hover:bg-[#e55a50] text-sm"
               >
                 Add to Cart
               </button>
@@ -306,62 +276,36 @@
 
       useOutsideClick(modalRef, onClose);
 
-      if (!product) {
-        return null;
-      }
+      if (!product) return null;
 
-      const priceUSD = Number.isFinite(product.priceUGX) ? (product.priceUGX * exchangeRate).toFixed(2) : '0.00';
-      const originalPriceUSD = product.originalPriceUGX && Number.isFinite(product.originalPriceUGX)
-        ? (product.originalPriceUGX * exchangeRate).toFixed(2)
-        : null;
+      const priceUSD = (product.priceUGX * exchangeRate).toFixed(2);
+      const originalPriceUSD = product.originalPriceUGX ? (product.originalPriceUGX * exchangeRate).toFixed(2) : null;
 
       return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-2 sm:px-0">
-          <div ref={modalRef} className="bg-white rounded-lg shadow-lg p-3 sm:p-4 max-w-sm sm:max-w-md w-full">
-            <div className="flex justify-between items-center mb-3 sm:mb-4">
-              <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">{product.title || 'Unknown Product'}</h3>
-              <button onClick={onClose} className="text-gray-600 hover:text-gray-900" aria-label="Close">
-                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+          <div ref={modalRef} className="bg-white rounded-lg shadow-lg p-4 max-w-md w-full">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 truncate">{product.title}</h3>
+              <button onClick={onClose} className="text-gray-600 hover:text-gray-900">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
-            <img src={product.image || 'https://via.placeholder.com/300'} alt={product.title || 'Product'} className="w-full h-40 sm:h-48 object-contain rounded mb-3 sm:mb-4" />
-            <div className="space-y-1 sm:space-y-2">
+            <img src={product.image || 'https://via.placeholder.com/300'} alt={product.title} className="w-full h-48 object-contain rounded mb-4" />
+            <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <p className="text-sm sm:text-base font-semibold text-gray-900">
-                  UGX {Number.isFinite(product.priceUGX) ? product.priceUGX.toLocaleString() : '0'}
-                </p>
-                {product.originalPriceUGX && Number.isFinite(product.originalPriceUGX) && (
-                  <p className="text-xs sm:text-sm text-gray-500 line-through">
-                    UGX {product.originalPriceUGX.toLocaleString()}
-                  </p>
-                )}
+                <p className="text-base font-semibold text-gray-900">UGX {product.priceUGX.toLocaleString()}</p>
+                {product.originalPriceUGX && <p className="text-sm text-gray-500 line-through">UGX {product.originalPriceUGX.toLocaleString()}</p>}
               </div>
               <p className="text-xs text-gray-600">USD {priceUSD}</p>
-              {product.discount && Number.isFinite(product.discount) && (
-                <p className="text-xs text-orange-500">-{product.discount}% OFF</p>
-              )}
-              {product.isFreeShipping && (
-                <p className="text-xs text-green-600">Free Shipping Eligible</p>
-              )}
-              {product.isGlobal && (
-                <p className="text-xs text-purple-600">May take 7-14 days for delivery</p>
-              )}
-              {product.isOfficialStore && (
-                <p className="text-xs text-blue-600">Official Store Product</p>
-              )}
-              {product.isRefurbished && (
-                <p className="text-xs text-green-600">Refurbished Item</p>
-              )}
-              {Array.isArray(product.variations) && product.variations.length > 0 && (
-                <p className="text-xs text-gray-600">
-                  Available Variations: {product.variations.join(", ")}
-                </p>
-              )}
-              <p className="text-xs text-gray-600">
-                Category: {product.category || 'N/A'} {product.subcategory && `> ${product.subcategory}`}
-              </p>
+              {product.discount && <p className="text-xs text-[#ff6f61]">-{product.discount}% OFF</p>}
+              {product.isFreeShipping && <p className="text-xs text-green-600">Free Shipping Eligible</p>}
+              {product.isGlobal && <p className="text-xs text-purple-600">May take 7-14 days for delivery</p>}
+              {product.isOfficialStore && <p className="text-xs text-blue-600">Official Store Product</p>}
+              {product.isRefurbished && <p className="text-xs text-green-600">Refurbished Item</p>}
+              {product.variations?.length > 0 && <p className="text-xs text-gray-600">Available Variations: {product.variations.join(", ")}</p>}
+              <p className="text-xs text-gray-600">Category: {product.category} {product.subcategory && `> ${product.subcategory}`}</p>
             </div>
           </div>
         </div>
@@ -381,20 +325,13 @@
 
       useOutsideClick(modalRef, onClose);
 
-      const safeCart = Array.isArray(cart) ? cart : [];
-
-      const subtotal = safeCart.reduce((sum, item) => {
-        const price = Number.isFinite(item?.price) ? item.price : 0;
-        const quantity = Number.isFinite(item?.quantity) ? item.quantity : 0;
-        return sum + price * quantity;
-      }, 0);
-      const totalDeliveryFee = deliveryFeePerItem * safeCart.length;
-      const total = subtotal + totalDeliveryFee + serviceFee + (Number.isFinite(tip) ? tip : 0);
-
+      const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const totalDeliveryFee = deliveryFeePerItem * cart.length;
+      const total = subtotal + totalDeliveryFee + serviceFee + tip;
       const subtotalUSD = (subtotal * exchangeRate).toFixed(2);
       const deliveryFeeUSD = (totalDeliveryFee * exchangeRate).toFixed(2);
       const serviceFeeUSD = (serviceFee * exchangeRate).toFixed(2);
-      const tipUSD = ((Number.isFinite(tip) ? tip : 0) * exchangeRate).toFixed(2);
+      const tipUSD = (tip * exchangeRate).toFixed(2);
       const totalUSD = (total * exchangeRate).toFixed(2);
 
       const handleConfirm = () => {
@@ -412,31 +349,13 @@
         }
         setError("");
 
-        let invoice = `📋 *aura Invoice*\n`;
-        invoice += `===\n\n`;
-        invoice += `=== Delivery Information ===\n`;
-        invoice += `Email: ${email}\n`;
-        invoice += `Phone: ${phone}\n`;
-        invoice += `Payment Method: ${paymentMethod}\n\n`;
-        invoice += `=== Purchase Summary ===\n`;
-        safeCart.forEach((item, index) => {
-          const price = Number.isFinite(item?.price) ? item.price : 0;
-          const quantity = Number.isFinite(item?.quantity) ? item.quantity : 0;
-          const itemTotal = price * quantity;
+        let invoice = `📋 *aura Invoice*\n===\n\n=== Delivery Information ===\nEmail: ${email}\nPhone: ${phone}\nPayment Method: ${paymentMethod}\n\n=== Purchase Summary ===\n`;
+        cart.forEach((item, index) => {
+          const itemTotal = item.price * item.quantity;
           const itemTotalUSD = (itemTotal * exchangeRate).toFixed(2);
-          invoice += `${index + 1}. *${item?.title || 'Unknown Item'}*`;
-          if (item?.size) invoice += ` (${item.size})`;
-          invoice += ` x${quantity} - UGX ${itemTotal.toLocaleString()} (USD ${itemTotalUSD})\n`;
-          invoice += `-\n`;
+          invoice += `${index + 1}. *${item.title}*${item.size ? ` (${item.size})` : ''} x${item.quantity} - UGX ${itemTotal.toLocaleString()} (USD ${itemTotalUSD})\n-\n`;
         });
-        invoice += `\n=== Price Breakdown ===\n`;
-        invoice += `Subtotal....UGX ${subtotal.toLocaleString()} (USD ${subtotalUSD})\n`;
-        invoice += `Delivery Fee...UGX ${totalDeliveryFee.toLocaleString()} (USD ${deliveryFeeUSD})\n`;
-        invoice += `Service Fee...UGX ${serviceFee.toLocaleString()} (USD ${serviceFeeUSD})\n`;
-        invoice += `Tip...UGX ${(Number.isFinite(tip) ? tip : 0).toLocaleString()} (USD ${tipUSD})\n`;
-        invoice += `*Total*......*UGX ${total.toLocaleString()}* (USD ${totalUSD})\n`;
-        invoice += `===\n`;
-        invoice += `Thank you for your order! Please confirm receipt. ✅\n`;
+        invoice += `\n=== Price Breakdown ===\nSubtotal....UGX ${subtotal.toLocaleString()} (USD ${subtotalUSD})\nDelivery Fee...UGX ${totalDeliveryFee.toLocaleString()} (USD ${deliveryFeeUSD})\nService Fee...UGX ${serviceFee.toLocaleString()} (USD ${serviceFeeUSD})\nTip...UGX ${tip.toLocaleString()} (USD ${tipUSD})\n*Total*......*UGX ${total.toLocaleString()}* (USD ${totalUSD})\n===\nThank you for your order! Please confirm receipt. ✅\n`;
 
         const encodedMessage = encodeURIComponent(invoice);
         const whatsappUrl = `https://wa.me/256758468490?text=${encodedMessage}`;
@@ -446,41 +365,34 @@
       };
 
       return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-2 sm:px-0">
-          <div
-            ref={modalRef}
-            className="bg-white rounded-lg shadow-lg p-4 sm:p-6 max-w-md sm:max-w-lg w-full max-h-[80vh] overflow-y-auto"
-          >
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">Order Summary</h3>
-            <div className="space-y-1 sm:space-y-2">
-              {safeCart.map((item, index) => (
-                <div key={index} className="flex items-center justify-between py-1 sm:py-2 border-b">
-                  <div className="flex items-center space-x-2 sm:space-x-3">
-                    <img src={item?.image || 'https://via.placeholder.com/48'} alt={item?.title || 'Item'} className="w-10 h-10 sm:w-12 sm:h-12 object-contain rounded" />
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+          <div ref={modalRef} className="bg-white rounded-lg shadow-lg p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto">
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">Order Summary</h3>
+            <div className="space-y-2">
+              {cart.map((item, index) => (
+                <div key={index} className="flex items-center justify-between py-2 border-b">
+                  <div className="flex items-center space-x-3">
+                    <img src={item.image || 'https://via.placeholder.com/48'} alt={item.title} className="w-12 h-12 object-contain rounded" />
                     <div>
-                      <h4 className="text-xs sm:text-sm font-medium text-gray-900 truncate w-32 sm:w-40">{item?.title || 'Unknown Item'}</h4>
-                      {item?.size && <p className="text-xs text-gray-600">Size: {item.size}</p>}
-                      <p className="text-xs text-gray-600">
-                        UGX {(Number.isFinite(item?.price) ? item.price : 0).toLocaleString()} x {(Number.isFinite(item?.quantity) ? item.quantity : 0)}
-                      </p>
+                      <h4 className="text-sm font-medium text-gray-900 truncate w-40">{item.title}</h4>
+                      {item.size && <p className="text-xs text-gray-600">Size: {item.size}</p>}
+                      <p className="text-xs text-gray-600">UGX {item.price.toLocaleString()} x {item.quantity}</p>
                     </div>
                   </div>
-                  <p className="text-xs sm:text-sm font-semibold">
-                    UGX {((Number.isFinite(item?.price) ? item.price : 0) * (Number.isFinite(item?.quantity) ? item.quantity : 0)).toLocaleString()}
-                  </p>
+                  <p className="text-sm font-semibold">UGX {(item.price * item.quantity).toLocaleString()}</p>
                 </div>
               ))}
             </div>
-            <div className="mt-3 sm:mt-4">
-              <h4 className="text-xs sm:text-sm font-medium text-gray-900 mb-1">Delivery Information</h4>
-              <div className="mb-3 sm:mb-4 space-y-1 sm:space-y-2">
+            <div className="mt-4">
+              <h4 className="text-sm font-medium text-gray-900 mb-2">Delivery Information</h4>
+              <div className="mb-4 space-y-2">
                 <div>
                   <label className="block text-xs font-medium text-gray-700">Email Address</label>
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="mt-1 w-full border border-gray-300 rounded-md px-2 py-1 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="mt-1 w-full border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-2 focus:ring-[#ff6f61]"
                     placeholder="your.email@example.com"
                   />
                 </div>
@@ -490,7 +402,7 @@
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="mt-1 w-full border border-gray-300 rounded-md px-2 py-1 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="mt-1 w-full border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-2 focus:ring-[#ff6f61]"
                     placeholder="+256123456789"
                   />
                 </div>
@@ -499,7 +411,7 @@
                   <select
                     value={paymentMethod}
                     onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="mt-1 w-full border border-gray-300 rounded-md px-2 py-1 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="mt-1 w-full border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-2 focus:ring-[#ff6f61]"
                   >
                     <option value="">Select Payment Method</option>
                     <option value="MTN Mobile Money">MTN Mobile Money</option>
@@ -507,66 +419,51 @@
                     <option value="Cash on Delivery">Cash on Delivery</option>
                   </select>
                 </div>
-                {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+                {error && <p className="text-red-500 text-xs mt-2">{error}</p>}
               </div>
-              <h4 className="text-xs sm:text-sm font-medium text-gray-900 mb-1">Price Breakdown</h4>
+              <h4 className="text-sm font-medium text-gray-900 mb-2">Price Breakdown</h4>
               <div className="space-y-1">
-                <div className="flex justify-between text-xs sm:text-sm">
+                <div className="flex justify-between text-sm">
                   <span>Subtotal:</span>
-                  <div className="text-right">
-                    <span>UGX {subtotal.toLocaleString()}</span>
-                    <p className="text-xs text-gray-600">USD {subtotalUSD}</p>
-                  </div>
+                  <div className="text-right"><span>UGX {subtotal.toLocaleString()}</span><p className="text-xs text-gray-600">USD {subtotalUSD}</p></div>
                 </div>
-                <div className="flex justify-between text-xs sm:text-sm">
+                <div className="flex justify-between text-sm">
                   <span>Delivery Fee:</span>
-                  <div className="text-right">
-                    <span>UGX {totalDeliveryFee.toLocaleString()}</span>
-                    <p className="text-xs text-gray-600">USD {deliveryFeeUSD}</p>
-                  </div>
+                  <div className="text-right"><span>UGX {totalDeliveryFee.toLocaleString()}</span><p className="text-xs text-gray-600">USD {deliveryFeeUSD}</p></div>
                 </div>
-                <div className="flex justify-between text-xs sm:text-sm">
+                <div className="flex justify-between text-sm">
                   <span>Service Fee:</span>
-                  <div className="text-right">
-                    <span>UGX {serviceFee.toLocaleString()}</span>
-                    <p className="text-xs text-gray-600">USD {serviceFeeUSD}</p>
-                  </div>
+                  <div className="text-right"><span>UGX {serviceFee.toLocaleString()}</span><p className="text-xs text-gray-600">USD {serviceFeeUSD}</p></div>
                 </div>
-                <div className="flex justify-between text-xs sm:text-sm">
+                <div className="flex justify-between text-sm">
                   <span>Tip:</span>
                   <div className="text-right">
                     <input
                       type="number"
                       min="0"
                       value={tip}
-                      onChange={(e) => {
-                        const value = parseInt(e.target.value);
-                        setTip(isNaN(value) ? 0 : Math.max(0, value));
-                      }}
-                      className="w-16 sm:w-20 border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      onChange={(e) => setTip(Math.max(0, parseInt(e.target.value) || 0))}
+                      className="w-20 border border-gray-300 rounded-md px-2 py-1 text-xs focus:ring-2 focus:ring-[#ff6f61]"
                     />
                     <p className="text-xs text-gray-600">USD {tipUSD}</p>
                   </div>
                 </div>
-                <div className="flex justify-between text-base sm:text-lg font-semibold border-t pt-1">
+                <div className="flex justify-between text-lg font-semibold border-t pt-2">
                   <span>Total:</span>
-                  <div className="text-right">
-                    <span>UGX {total.toLocaleString()}</span>
-                    <p className="text-xs text-gray-600">USD {totalUSD}</p>
-                  </div>
+                  <div className="text-right"><span>UGX {total.toLocaleString()}</span><p className="text-xs text-gray-600">USD {totalUSD}</p></div>
                 </div>
               </div>
             </div>
-            <div className="flex justify-end space-x-3 sm:space-x-4 mt-3 sm:mt-4">
+            <div className="flex justify-end space-x-4 mt-4">
               <button
                 onClick={onClose}
-                className="bg-gray-300 text-gray-900 uppercase font-bold py-1 px-3 sm:py-2 sm:px-4 rounded-full hover:bg-gray-400 transition text-xs sm:text-sm"
+                className="bg-gray-300 text-gray-900 font-medium py-2 px-4 rounded-full hover:bg-gray-400 text-sm"
               >
                 Cancel
               </button>
               <button
                 onClick={handleConfirm}
-                className="bg-purple-500 text-white uppercase font-bold py-1 px-3 sm:py-2 sm:px-4 rounded-full hover:bg-purple-600 transition text-xs sm:text-sm"
+                className="bg-[#ff6f61] text-white font-medium py-2 px-4 rounded-full hover:bg-[#e55a50] text-sm"
               >
                 Confirm Order
               </button>
@@ -581,65 +478,53 @@
       const deliveryFeePerItem = 1000;
       const serviceFee = 500;
 
-      const safeCart = Array.isArray(cart) ? cart : [];
-
-      const subtotal = safeCart.reduce((sum, item) => {
-        const price = Number.isFinite(item?.price) ? item.price : 0;
-        const quantity = Number.isFinite(item?.quantity) ? item.quantity : 0;
-        return sum + price * quantity;
-      }, 0);
-      const totalDeliveryFee = deliveryFeePerItem * safeCart.length;
+      const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const totalDeliveryFee = deliveryFeePerItem * cart.length;
       const total = subtotal + totalDeliveryFee + serviceFee;
       const totalUSD = (total * exchangeRate).toFixed(2);
 
       return (
-        <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-white rounded-lg shadow-lg z-50 p-3 sm:p-4 max-h-80 sm:max-h-96 overflow-y-auto">
-          <div className="flex justify-between items-center mb-3 sm:mb-4">
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900">Your Cart</h3>
-            <button onClick={closeMiniCart} className="text-gray-600 hover:text-gray-900" aria-label="Close">
-              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-50 p-4 max-h-96 overflow-y-auto">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">Your Cart</h3>
+            <button onClick={closeMiniCart} className="text-gray-600 hover:text-gray-900">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
-          {safeCart.length === 0 ? (
-            <p className="text-gray-600 text-xs sm:text-sm">Your cart is empty.</p>
+          {cart.length === 0 ? (
+            <p className="text-gray-600 text-sm">Your cart is empty.</p>
           ) : (
             <>
-              {safeCart.map((item, index) => (
-                <div key={index} className="flex items-center justify-between py-1 sm:py-2 border-b">
-                  <div className="flex items-center space-x-2 sm:space-x-3">
-                    <img src={item?.image || 'https://via.placeholder.com/48'} alt={item?.title || 'Item'} className="w-10 h-10 sm:w-12 sm:h-12 object-contain rounded" />
+              {cart.map((item, index) => (
+                <div key={index} className="flex items-center justify-between py-2 border-b">
+                  <div className="flex items-center space-x-3">
+                    <img src={item.image || 'https://via.placeholder.com/48'} alt={item.title} className="w-12 h-12 object-contain rounded" />
                     <div>
-                      <h4 className="text-xs sm:text-sm font-medium text-gray-900 truncate w-28 sm:w-40">{item?.title || 'Unknown Item'}</h4>
-                      {item?.size && <p className="text-xs text-gray-600">Size: {item.size}</p>}
-                      <p className="text-xs text-gray-600">
-                        UGX {(Number.isFinite(item?.price) ? item.price : 0).toLocaleString()} x {(Number.isFinite(item?.quantity) ? item.quantity : 0)}
-                      </p>
+                      <h4 className="text-sm font-medium text-gray-900 truncate w-40">{item.title}</h4>
+                      {item.size && <p className="text-xs text-gray-600">Size: {item.size}</p>}
+                      <p className="text-xs text-gray-600">UGX {item.price.toLocaleString()} x {item.quantity}</p>
                     </div>
                   </div>
                   <button
                     onClick={() => removeFromCart(index)}
                     className="text-red-500 hover:text-red-700"
-                    aria-label="Remove item from cart"
                   >
-                    <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4M9 7v12m6-12v12M3 7h18" />
                     </svg>
                   </button>
                 </div>
               ))}
-              <div className="mt-3 sm:mt-4">
-                <div className="flex justify-between text-base sm:text-lg font-semibold mb-2">
+              <div className="mt-4">
+                <div className="flex justify-between text-lg font-semibold mb-2">
                   <span>Total:</span>
-                  <div className="text-right">
-                    <span>UGX {total.toLocaleString()}</span>
-                    <p className="text-xs text-gray-600">USD {totalUSD}</p>
-                  </div>
+                  <div className="text-right"><span>UGX {total.toLocaleString()}</span><p className="text-xs text-gray-600">USD {totalUSD}</p></div>
                 </div>
                 <button
                   onClick={openCheckoutModal}
-                  className="w-full bg-black text-white uppercase font-bold py-1 sm:py-2 rounded-full hover:bg-white hover:text-black hover:border hover:border-black transition text-xs sm:text-sm"
+                  className="w-full bg-[#ff6f61] text-white font-medium py-2 rounded-full hover:bg-[#e55a50] text-sm"
                 >
                   CHECKOUT
                 </button>
@@ -655,42 +540,18 @@
       const deliveryFeePerItem = 1000;
       const serviceFee = 500;
 
-      const safeWishlist = Array.isArray(wishlist) ? wishlist : [];
-      const safeProducts = Array.isArray(products?.current) ? products.current : [];
-
-      const wishlistItems = safeWishlist
-        .map((title) => {
-          const product = safeProducts.find((p) => p?.title === title);
-          return product ? { ...product, title: product.title || title } : null;
-        })
+      const wishlistItems = wishlist
+        .map((title) => products.current.find((p) => p.title === title))
         .filter((item) => item !== null);
 
       const handleAddAllToCart = () => {
         let variationModalOpened = false;
         wishlistItems.forEach((item) => {
-          if (!item || !item.title) return;
-
-          if (
-            !variationModalOpened &&
-            Array.isArray(item.variations) &&
-            item.variations.length > 0
-          ) {
-            openVariationModal({
-              title: item.title,
-              price: Number.isFinite(item.priceUGX) ? item.priceUGX : 0,
-              image: item.image || 'https://via.placeholder.com/48',
-              variations: item.variations
-            });
+          if (!variationModalOpened && item.variations?.length > 0) {
+            openVariationModal({ title: item.title, price: item.priceUGX, image: item.image, variations: item.variations });
             variationModalOpened = true;
-          } else if (
-            Number.isFinite(item.priceUGX) &&
-            (!Array.isArray(item.variations) || item.variations.length === 0)
-          ) {
-            addToCart({
-              title: item.title,
-              price: item.priceUGX,
-              image: item.image || 'https://via.placeholder.com/48'
-            });
+          } else {
+            addToCart({ title: item.title, price: item.priceUGX, image: item.image });
           }
         });
         if (!variationModalOpened) {
@@ -700,50 +561,37 @@
       };
 
       return (
-        <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-white rounded-lg shadow-lg z-50 p-3 sm:p-4 max-h-80 sm:max-h-96 overflow-y-auto">
-          <div className="flex justify-between items-center mb-3 sm:mb-4">
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900">Your Wishlist</h3>
-            <button onClick={closeMiniWishlist} className="text-gray-600 hover:text-gray-900" aria-label="Close">
-              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-50 p-4 max-h-96 overflow-y-auto">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">Your Wishlist</h3>
+            <button onClick={closeMiniWishlist} className="text-gray-600 hover:text-gray-900">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
           {wishlistItems.length === 0 ? (
-            <p className="text-gray-600 text-xs sm:text-sm">Your wishlist is empty.</p>
+            <p className="text-gray-600 text-sm">Your wishlist is empty.</p>
           ) : (
             <>
               {wishlistItems.map((item, index) => {
-                const totalPrice = (Number.isFinite(item?.priceUGX) ? item.priceUGX : 0) + deliveryFeePerItem + serviceFee;
+                const totalPrice = item.priceUGX + deliveryFeePerItem + serviceFee;
                 const priceUSD = (totalPrice * exchangeRate).toFixed(2);
                 return (
-                  <div key={index} className="flex items-center justify-between py-1 sm:py-2 border-b">
-                    <div className="flex items-center space-x-2 sm:space-x-3">
-                      <img
-                        src={item?.image || 'https://via.placeholder.com/48'}
-                        alt={item?.title || 'Item'}
-                        className="w-10 h-10 sm:w-12 sm:h-12 object-contain rounded"
-                      />
+                  <div key={index} className="flex items-center justify-between py-2 border-b">
+                    <div className="flex items-center space-x-3">
+                      <img src={item.image || 'https://via.placeholder.com/48'} alt={item.title} className="w-12 h-12 object-contain rounded" />
                       <div>
-                        <h4 className="text-xs sm:text-sm font-medium text-gray-900 truncate w-28 sm:w-40">{item?.title || 'Unknown Item'}</h4>
-                        {Number.isFinite(item?.priceUGX) && item.priceUGX > 0 && (
-                          <>
-                            <p className="text-xs text-gray-600">
-                              UGX {totalPrice.toLocaleString()}
-                            </p>
-                            <p className="text-xs text-gray-600">
-                              USD {priceUSD}
-                            </p>
-                          </>
-                        )}
+                        <h4 className="text-sm font-medium text-gray-900 truncate w-40">{item.title}</h4>
+                        <p className="text-xs text-gray-600">UGX {totalPrice.toLocaleString()}</p>
+                        <p className="text-xs text-gray-600">USD {priceUSD}</p>
                       </div>
                     </div>
                     <button
                       onClick={() => toggleWishlist(item.title)}
                       className="text-red-500 hover:text-red-700"
-                      aria-label={`Remove ${item.title} from wishlist`}
                     >
-                      <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     </button>
@@ -753,9 +601,7 @@
               <button
                 onClick={handleAddAllToCart}
                 disabled={wishlistItems.length === 0}
-                className={`w-full bg-black text-white uppercase font-bold py-1 sm:py-2 rounded-full transition text-xs sm:text-sm mt-3 sm:mt-4 ${
-                  wishlistItems.length === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white hover:text-black hover:border hover:border-black'
-                }`}
+                className={`w-full bg-[#ff6f61] text-white font-medium py-2 rounded-full text-sm mt-4 ${wishlistItems.length === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#e55a50]'}`}
               >
                 ADD TO CART
               </button>
@@ -769,146 +615,28 @@
       const cartRef = React.useRef(null);
       const wishlistRef = React.useRef(null);
 
-      useOutsideClick(cartRef, () => {
-        if (isMiniCartOpen) closeMiniCart();
-      });
-      useOutsideClick(wishlistRef, () => {
-        if (isMiniWishlistOpen) closeMiniWishlist();
-      });
-
-      const handleKeyDown = (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-        }
-      };
-
-      const safeCartItemCount = Number.isFinite(cartItemCount) ? cartItemCount : 0;
-      const safeWishlistCount = Number.isFinite(wishlistCount) ? wishlistCount : 0;
+      useOutsideClick(cartRef, () => isMiniCartOpen && closeMiniCart());
+      useOutsideClick(wishlistRef, () => isMiniWishlistOpen && closeMiniWishlist());
 
       return (
-        <header className="bg-gray-900 text-white sticky top-8 z-40">
-          <div className="max-w-full mx-auto px-2 sm:px-4 lg:px-8">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-3 sm:h-16">
-              <div className="flex items-center justify-between sm:justify-start sm:space-x-4 w-full sm:w-auto">
-                <h1 className="text-xl sm:text-2xl font-bold">
-                  aura
-                </h1>
-                <div className="flex items-center space-x-2 sm:space-x-4 sm:hidden">
-                  <CategoryMenu
-                    categories={categories}
-                    subcategories={subcategories}
-                    setSelectedCategory={setSelectedCategory}
-                    setSelectedSubcategory={setSelectedSubcategory}
-                  />
-                  <div className="relative" ref={wishlistRef}>
-                    <button
-                      onClick={() => {
-                        toggleMiniWishlist(!isMiniWishlistOpen);
-                        if (isMiniCartOpen) closeMiniCart();
-                      }}
-                      className="hover:text-yellow-400 relative focus:outline-none text-sm"
-                      aria-label={`Wishlist with ${safeWishlistCount} items`}
-                    >
-                      Wishlist
-                      {safeWishlistCount > 0 && (
-                        <span className="absolute -top-2 -right-2 bg-yellow-400 text-gray-900 text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                          {safeWishlistCount}
-                        </span>
-                      )}
-                    </button>
-                    {isMiniWishlistOpen && (
-                      <MiniWishlist
-                        wishlist={wishlist}
-                        toggleWishlist={toggleWishlist}
-                        products={products}
-                        closeMiniWishlist={closeMiniWishlist}
-                        addToCart={addToCart}
-                        openVariationModal={openVariationModal}
-                      />
-                    )}
-                  </div>
-                  <div className="relative" ref={cartRef}>
-                    <button
-                      onClick={() => {
-                        toggleMiniCart(!isMiniCartOpen);
-                        if (isMiniWishlistOpen) closeMiniWishlist();
-                      }}
-                      className="hover:text-yellow-400 relative focus:outline-none text-sm"
-                      aria-label={`Cart with ${safeCartItemCount} items`}
-                    >
-                      Cart
-                      {safeCartItemCount > 0 && (
-                        <span className="absolute -top-2 -right-2 bg-yellow-400 text-gray-900 text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                          {safeCartItemCount}
-                        </span>
-                      )}
-                    </button>
-                    {isMiniCartOpen && (
-                      <MiniCart
-                        cart={cart}
-                        removeFromCart={removeFromCart}
-                        closeMiniCart={closeMiniCart}
-                        openCheckoutModal={openCheckoutModal}
-                      />
-                    )}
-                  </div>
-                </div>
-              </div>
-              <div className="flex-1 mx-0 sm:mx-4 mt-2 sm:mt-0">
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Search products..."
-                    value={searchQuery || ''}
-                    onChange={(e) => handleSearchChange(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    className="w-full py-1 sm:py-2 pl-8 sm:pl-10 pr-8 sm:pr-10 rounded-full bg-gray-800 text-white text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
-                    aria-label="Search products"
-                  />
-                  <svg
-                    className="w-4 h-4 sm:w-5 sm:h-5 absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                  {searchQuery && (
-                    <button
-                      onClick={clearSearch}
-                      className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
-                      aria-label="Clear search"
-                    >
-                      <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  )}
-                </div>
-              </div>
-              <div className="hidden sm:flex items-center space-x-4 relative">
-                <CategoryMenu
-                  categories={categories}
-                  subcategories={subcategories}
-                  setSelectedCategory={setSelectedCategory}
-                  setSelectedSubcategory={setSelectedSubcategory}
-                />
-                <a href="#" className="hover:text-yellow-400 text-sm sm:text-base">Account</a>
+        <header className="bg-gradient-to-r from-gray-900 to-gray-800 text-white sticky top-8 z-40">
+          <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center justify-between sm:space-x-4">
+              <h1 className="text-2xl font-bold">aura</h1>
+              <div className="flex items-center space-x-4 sm:hidden">
+                <CategoryMenu categories={categories} subcategories={subcategories} setSelectedCategory={setSelectedCategory} setSelectedSubcategory={setSelectedSubcategory} />
                 <div className="relative" ref={wishlistRef}>
                   <button
                     onClick={() => {
                       toggleMiniWishlist(!isMiniWishlistOpen);
                       if (isMiniCartOpen) closeMiniCart();
                     }}
-                    className="hover:text-yellow-400 relative focus:outline-none text-sm sm:text-base"
-                    aria-label={`Wishlist with ${safeWishlistCount} items`}
+                    className="cart-wishlist relative text-white transition"
                   >
-                    Wishlist
-                    {safeWishlistCount > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-yellow-400 text-gray-900 text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                        {safeWishlistCount}
-                      </span>
-                    )}
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                    {wishlistCount > 0 && <span className="badge-pulse absolute -top-2 -right-2 bg-[#ff6f61] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">{wishlistCount}</span>}
                   </button>
                   {isMiniWishlistOpen && (
                     <MiniWishlist
@@ -927,15 +655,12 @@
                       toggleMiniCart(!isMiniCartOpen);
                       if (isMiniWishlistOpen) closeMiniWishlist();
                     }}
-                    className="hover:text-yellow-400 relative focus:outline-none text-sm sm:text-base"
-                    aria-label={`Cart with ${safeCartItemCount} items`}
+                    className="cart-wishlist relative text-white transition"
                   >
-                    Cart
-                    {safeCartItemCount > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-yellow-400 text-gray-900 text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                        {safeCartItemCount}
-                      </span>
-                    )}
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    {cartItemCount > 0 && <span className="badge-pulse absolute -top-2 -right-2 bg-[#ff6f61] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">{cartItemCount}</span>}
                   </button>
                   {isMiniCartOpen && (
                     <MiniCart
@@ -948,90 +673,122 @@
                 </div>
               </div>
             </div>
+            <div className="flex-1 mx-4 mt-2 sm:mt-0">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search for anything..."
+                  value={searchQuery || ''}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  className="w-full py-2 pl-10 pr-10 rounded-full bg-white text-gray-900 text-sm focus:ring-2 focus:ring-[#ff6f61]"
+                />
+                <svg className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                {searchQuery && (
+                  <button onClick={clearSearch} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-900">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            </div>
+            <div className="hidden sm:flex items-center space-x-4">
+              <CategoryMenu categories={categories} subcategories={subcategories} setSelectedCategory={setSelectedCategory} setSelectedSubcategory={setSelectedSubcategory} />
+              <a href="#" className="text-sm font-medium hover:text-[#ff6f61]">Account</a>
+              <div className="relative" ref={wishlistRef}>
+                <button
+                  onClick={() => {
+                    toggleMiniWishlist(!isMiniWishlistOpen);
+                    if (isMiniCartOpen) closeMiniCart();
+                  }}
+                  className="cart-wishlist relative text-white transition"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  </svg>
+                  {wishlistCount > 0 && <span className="badge-pulse absolute -top-2 -right-2 bg-[#ff6f61] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">{wishlistCount}</span>}
+                </button>
+                {isMiniWishlistOpen && (
+                  <MiniWishlist
+                    wishlist={wishlist}
+                    toggleWishlist={toggleWishlist}
+                    products={products}
+                    closeMiniWishlist={closeMiniWishlist}
+                    addToCart={addToCart}
+                    openVariationModal={openVariationModal}
+                  />
+                )}
+              </div>
+              <div className="relative" ref={cartRef}>
+                <button
+                  onClick={() => {
+                    toggleMiniCart(!isMiniCartOpen);
+                    if (isMiniWishlistOpen) closeMiniWishlist();
+                  }}
+                  className="cart-wishlist relative text-white transition"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  {cartItemCount > 0 && <span className="badge-pulse absolute -top-2 -right-2 bg-[#ff6f61] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">{cartItemCount}</span>}
+                </button>
+                {isMiniCartOpen && (
+                  <MiniCart
+                    cart={cart}
+                    removeFromCart={removeFromCart}
+                    closeMiniCart={closeMiniCart}
+                    openCheckoutModal={openCheckoutModal}
+                  />
+                )}
+              </div>
+            </div>
           </div>
         </header>
       );
     };
 
-    const ProductCard = ({ title, priceUGX, originalPriceUGX, discount, image, variations, openVariationModal, addToCart, toggleWishlist, isWishlisted, isOfficialStore, isRefurbished, isGlobal, isFreeShipping, openDetailsPopup, category, subcategory }) => {
+    const ProductCard = ({ title, priceUGX, originalPriceUGX, discount, image, variations, openVariationModal, addToCart, toggleWishlist, isWishlisted, isOfficialStore, isFreeShipping, isGlobal, openDetailsPopup }) => {
       const exchangeRate = 0.00027;
-      const priceUSD = Number.isFinite(priceUGX) ? (priceUGX * exchangeRate).toFixed(2) : '0.00';
-      const originalPriceUSD = Number.isFinite(originalPriceUGX) ? (originalPriceUGX * exchangeRate).toFixed(2) : null;
+      const priceUSD = (priceUGX * exchangeRate).toFixed(2);
+      const originalPriceUSD = originalPriceUGX ? (originalPriceUGX * exchangeRate).toFixed(2) : null;
 
       return (
-        <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
+        <div className="product-card bg-white rounded-lg shadow-md overflow-hidden transition duration-300">
           <div className="relative">
-            <button onClick={openDetailsPopup} className="w-full" aria-label={`View details for ${title}`}>
-              <img src={image || 'https://via.placeholder.com/300'} alt={title || 'Product'} className="w-full h-40 sm:h-48 object-contain" />
+            <button onClick={openDetailsPopup} className="w-full">
+              <img src={image || 'https://via.placeholder.com/300'} alt={title} className="w-full h-48 object-contain" />
             </button>
             <button
               onClick={() => toggleWishlist(title)}
-              className={`absolute top-2 right-2 w-4 h-4 sm:w-5 sm:h-5 ${
-                isWishlisted ? 'text-red-500 fill-current' : 'text-gray-600 fill-none stroke-current'
-              } hover:text-red-500 transition`}
-              aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+              className={`cart-wishlist absolute top-2 right-2 w-6 h-6 transition ${isWishlisted ? 'text-red-500 fill-current' : 'text-gray-600'}`}
             >
               <svg viewBox="0 0 24 24" strokeWidth="2">
-                <path
-                  d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-                />
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
               </svg>
             </button>
-            {Number.isFinite(discount) && discount > 0 && (
-              <span className="absolute top-2 left-2 bg-orange-500 text-white text-[10px] sm:text-xs font-bold py-0.5 sm:py-1 px-1 sm:px-2 rounded">
-                -{discount}%
-              </span>
-            )}
-            {isOfficialStore && (
-              <span className="absolute top-2 right-8 sm:right-10 bg-blue-500 text-white text-[10px] sm:text-xs font-bold py-0.5 sm:py-1 px-1 sm:px-2 rounded">
-                Official Store
-              </span>
-            )}
-            {isRefurbished && (
-              <span className="absolute top-8 sm:top-10 left-2 bg-green-500 text-white text-[10px] sm:text-xs font-bold py-0.5 sm:py-1 px-1 sm:px-2 rounded">
-                Refurbished
-              </span>
-            )}
-            {isGlobal && (
-              <span className="absolute top-8 sm:top-10 right-2 bg-purple-500 text-white text-[10px] sm:text-xs font-bold py-0.5 sm:py-1 px-1 sm:px-2 rounded">
-                Shipped from Abroad
-              </span>
-            )}
+            {discount > 0 && <span className="absolute top-2 left-2 bg-[#ff6f61] text-white text-xs font-medium py-1 px-2 rounded">-{discount}%</span>}
+            {isOfficialStore && <span className="absolute top-2 right-10 bg-blue-600 text-white text-xs font-medium py-1 px-2 rounded">Official</span>}
+            {isGlobal && <span className="absolute top-10 right-2 bg-purple-600 text-white text-xs font-medium py-1 px-2 rounded">Global</span>}
           </div>
-          <div className="p-2 sm:p-3">
-            <h3 className="text-xs sm:text-sm text-gray-900 truncate">{title || 'Unknown Product'}</h3>
+          <div className="p-3">
+            <h3 className="text-sm text-gray-900 truncate">{title}</h3>
             <div className="flex items-center justify-between mt-1">
-              <p className="text-sm sm:text-base font-semibold text-gray-900">
-                UGX {(Number.isFinite(priceUGX) ? priceUGX : 0).toLocaleString()}
-              </p>
-              {Number.isFinite(originalPriceUGX) && originalPriceUGX > 0 && (
-                <p className="text-xs sm:text-sm text-gray-500 line-through">
-                  UGX {originalPriceUGX.toLocaleString()}
-                </p>
-              )}
+              <p className="text-base font-semibold text-gray-900">UGX {priceUGX.toLocaleString()}</p>
+              {originalPriceUGX && <p className="text-sm text-gray-500 line-through">UGX {originalPriceUGX.toLocaleString()}</p>}
             </div>
-            <p className="text-xs text-gray-600">
-              USD {priceUSD}
-            </p>
-            {isFreeShipping && (
-              <p className="text-xs text-green-600 mt-1">
-                Free Shipping Eligible
-              </p>
-            )}
-            {isGlobal && (
-              <p className="text-xs text-purple-600 mt-1">
-                May take 7-14 days for delivery
-              </p>
-            )}
+            <p className="text-xs text-gray-600">USD {priceUSD}</p>
+            {isFreeShipping && <p className="text-xs text-green-600 mt-1">Free Shipping</p>}
             <button
               onClick={() => {
-                if (Array.isArray(variations) && variations.length > 0) {
+                if (variations?.length > 0) {
                   openVariationModal({ title, price: priceUGX, image, variations });
                 } else {
                   addToCart({ title, price: priceUGX, image });
                 }
               }}
-              className="mt-2 w-full bg-black text-white uppercase font-bold py-1 sm:py-2 rounded-full hover:bg-white hover:text-black hover:border hover:border-black transition text-xs sm:text-sm"
+              className="mt-2 w-full bg-[#ff6f61] text-white font-medium py-2 rounded-full hover:bg-[#e55a50] text-sm"
             >
               Add to Cart
             </button>
@@ -1041,23 +798,17 @@
     };
 
     const ProductGrid = ({ openVariationModal, addToCart, toggleWishlist, wishlist, searchQuery, products, selectedCategory, selectedSubcategory, openDetailsPopup }) => {
-      const filteredProducts = (Array.isArray(products?.current) ? products.current : []).filter((product) => {
+      const filteredProducts = products.current.filter((product) => {
         let matches = true;
-        if (selectedCategory) {
-          matches = matches && product?.category === selectedCategory;
-        }
-        if (selectedSubcategory) {
-          matches = matches && product?.subcategory === selectedSubcategory;
-        }
-        if (searchQuery) {
-          matches = matches && product?.title?.toLowerCase()?.includes(searchQuery.toLowerCase());
-        }
-        return matches && product;
+        if (selectedCategory) matches = matches && product.category === selectedCategory;
+        if (selectedSubcategory) matches = matches && product.subcategory === selectedSubcategory;
+        if (searchQuery) matches = matches && product.title.toLowerCase().includes(searchQuery.toLowerCase());
+        return matches;
       });
 
       return (
-        <div className="max-w-full mx-auto px-2 sm:px-4 lg:px-8 py-6 sm:py-8">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
             {filteredProducts.length > 0 ? (
               filteredProducts.map((product, index) => (
                 <ProductCard
@@ -1066,13 +817,13 @@
                   openVariationModal={openVariationModal}
                   addToCart={addToCart}
                   toggleWishlist={toggleWishlist}
-                  isWishlisted={Array.isArray(wishlist) && wishlist.includes(product.title)}
+                  isWishlisted={wishlist.includes(product.title)}
                   openDetailsPopup={() => openDetailsPopup(product)}
                 />
               ))
             ) : (
-              <p className="text-gray-600 text-center col-span-full text-base sm:text-lg font-medium">
-                COMING SOON
+              <p className="text-gray-600 text-center col-span-full text-lg font-medium">
+                No products found. Try adjusting your filters or search.
               </p>
             )}
           </div>
@@ -1091,287 +842,79 @@
       const [selectedCategory, setSelectedCategory] = React.useState(null);
       const [selectedSubcategory, setSelectedSubcategory] = React.useState(null);
       const [detailsPopupProduct, setDetailsPopupProduct] = React.useState(null);
-      const productsRef = React.useRef([]);
+      const productsRef = React.useRef([
+        {
+          title: "SPJ 4 Litres, Hot Air Fryer",
+          priceUGX: 1179400,
+          originalPriceUGX: 1659160,
+          discount: 29,
+          image: "https://images.unsplash.com/photo-1630312481381-2d4a53a52db0",
+          isOfficialStore: true,
+          isFreeShipping: true,
+          isGlobal: false,
+          variations: [],
+          category: "Home & Kitchen",
+          subcategory: "Appliances"
+        },
+        {
+          title: "Apple iPad 3 16GB Wi-Fi",
+          priceUGX: 352820,
+          originalPriceUGX: 820460,
+          discount: 57,
+          image: "https://images.unsplash.com/photo-1511707171634-5f89772885ad",
+          isOfficialStore: true,
+          isFreeShipping: false,
+          isGlobal: false,
+          variations: ["16GB (1GB RAM)", "32GB (1GB RAM)", "64GB (1GB RAM)"],
+          category: "Electronics",
+          subcategory: "Tablets"
+        },
+        {
+          title: "Floral Summer Dress",
+          priceUGX: 141600,
+          originalPriceUGX: 177000,
+          discount: 20,
+          image: "https://images.unsplash.com/photo-1594633312681-47ce7a3f956b",
+          isOfficialStore: false,
+          isFreeShipping: true,
+          isGlobal: false,
+          variations: ["S", "M", "L", "XL"],
+          category: "Women Clothing",
+          subcategory: "Dresses"
+        }
+      ]);
 
-      React.useEffect(() => {
-        const vatRate = 0.18;
-        const transportFee = 10000;
-
-        const applyVatAndTransport = (basePrice) => {
-          const priceWithVat = basePrice * (1 + vatRate);
-          return Math.round(priceWithVat + transportFee);
-        };
-
-        const applyVatAndTransportToOriginal = (basePrice, discount) => {
-          if (!discount) return undefined;
-          const originalBasePrice = Math.round(basePrice / (1 - discount / 100));
-          const originalPriceWithVat = originalBasePrice * (1 + vatRate);
-          return Math.round(originalPriceWithVat + transportFee);
-        };
-
-        productsRef.current = [
-          {
-            title: "SPJ 4 Litres, Hot Air Fryer",
-            priceUGX: applyVatAndTransport(999400),
-            originalPriceUGX: applyVatAndTransportToOriginal(999400, 29),
-            discount: 29,
-            image: "https://images.unsplash.com/photo-1630312481381-2d4a53a52db0?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-            isOfficialStore: true,
-            isRefurbished: false,
-            isGlobal: false,
-            isFreeShipping: true,
-            variations: [],
-            category: "Home & Kitchen",
-            subcategory: "Appliances"
-          },
-          {
-            title: "Apple iPad 3 16GB Wi-Fi",
-            priceUGX: applyVatAndTransport(299000),
-            originalPriceUGX: applyVatAndTransportToOriginal(299000, 57),
-            discount: 57,
-            image: "https://images.unsplash.com/photo-1511707171634-5f89772885ad?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-            isOfficialStore: true,
-            isRefurbished: false,
-            isGlobal: false,
-            isFreeShipping: false,
-            variations: ["16GB (1GB RAM)", "32GB (1GB RAM)", "64GB (1GB RAM)"],
-            category: "Electronics",
-            subcategory: "Tablets"
-          },
-          {
-            title: "Floral Summer Dress",
-            priceUGX: applyVatAndTransport(120000),
-            originalPriceUGX: applyVatAndTransportToOriginal(120000, 20),
-            discount: 20,
-            image: "https://images.unsplash.com/photo-1594633312681-47ce7a3f956b?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-            isOfficialStore: false,
-            isRefurbished: false,
-            isGlobal: false,
-            isFreeShipping: true,
-            variations: ["S", "M", "L", "XL"],
-            category: "Women Clothing",
-            subcategory: "Dresses"
-          },
-          {
-            title: "Curve Denim Jacket",
-            priceUGX: applyVatAndTransport(180000),
-            originalPriceUGX: applyVatAndTransportToOriginal(180000, 18),
-            discount: 18,
-            image: "https://images.unsplash.com/photo-1608063615781-e2dce9033eb9?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-            isOfficialStore: false,
-            isRefurbished: false,
-            isGlobal: false,
-            isFreeShipping: true,
-            variations: ["L", "XL", "XXL"],
-            category: "Curve",
-            subcategory: "Jackets & Coats"
-          },
-          {
-            title: "Nike Air Max 90",
-            priceUGX: applyVatAndTransport(134000),
-            originalPriceUGX: applyVatAndTransportToOriginal(134000, 20),
-            discount: 20,
-            image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-            isOfficialStore: true,
-            isRefurbished: false,
-            isGlobal: false,
-            isFreeShipping: true,
-            variations: ["M", "L", "XL", "XXL"],
-            category: "Shoes",
-            subcategory: "Sneakers"
-          },
-          {
-            title: "Gold Necklace",
-            priceUGX: applyVatAndTransport(250000),
-            originalPriceUGX: applyVatAndTransportToOriginal(250000, 17),
-            discount: 17,
-            image: "https://images.unsplash.com/photo-1611652022419-a6b3c9319c5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-            isOfficialStore: false,
-            isRefurbished: false,
-            isGlobal: true,
-            isFreeShipping: false,
-            variations: [],
-            category: "Jewelry & Accessories",
-            subcategory: "Necklaces"
-          },
-          {
-            title: "Men's Casual Shirt",
-            priceUGX: applyVatAndTransport(100000),
-            originalPriceUGX: applyVatAndTransportToOriginal(100000, 23),
-            discount: 23,
-            image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-            isOfficialStore: false,
-            isRefurbished: false,
-            isGlobal: false,
-            isFreeShipping: true,
-            variations: ["M", "L", "XL"],
-            category: "Men Clothing",
-            subcategory: "Shirts"
-          },
-          {
-            title: "Kids Sneakers",
-            priceUGX: applyVatAndTransport(80000),
-            originalPriceUGX: applyVatAndTransportToOriginal(80000, 20),
-            discount: 20,
-            image: "https://images.unsplash.com/photo-1597045566897-1a5c4d25a6c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-            isOfficialStore: true,
-            isRefurbished: false,
-            isGlobal: false,
-            isFreeShipping: true,
-            variations: ["S", "M", "L"],
-            category: "Kids",
-            subcategory: "Footwear"
-          }
-        ];
-      }, []);
-
-      const categories = [
-        "New In",
-        "Sale",
-        "Women Clothing",
-        "Beachwear",
-        "Kids",
-        "Curve",
-        "Men Clothing",
-        "Shoes",
-        "Underwear & Sleepwear",
-        "Home & Kitchen",
-        "Jewelry & Accessories",
-        "Electronics",
-        "Sports"
-      ];
-
+      const categories = ["Women Clothing", "Home & Kitchen", "Electronics"];
       const subcategories = {
-        "Women Clothing": [
-          { name: "Dresses", image: "https://via.placeholder.com/96" },
-          { name: "Tops", image: "https://via.placeholder.com/96" },
-          { name: "Tank Tops & Camis", image: "https://via.placeholder.com/96" },
-          { name: "Blouses", image: "https://via.placeholder.com/96" },
-          { name: "T-shirts", image: "https://via.placeholder.com/96" },
-          { name: "Denim", image: "https://via.placeholder.com/96" },
-          { name: "Co-ords", image: "https://via.placeholder.com/96" },
-          { name: "Bottoms", image: "https://via.placeholder.com/96" },
-          { name: "Beachwear", image: "https://via.placeholder.com/96" }
-        ],
-        "Beachwear": [
-          { name: "Swimsuits", image: "https://via.placeholder.com/96" },
-          { name: "Cover-ups", image: "https://via.placeholder.com/96" },
-          { name: "Beach Bags", image: "https://via.placeholder.com/96" }
-        ],
-        "Kids": [
-          { name: "Clothing", image: "https://via.placeholder.com/96" },
-          { name: "Footwear", image: "https://via.placeholder.com/96" },
-          { name: "Accessories", image: "https://via.placeholder.com/96" }
-        ],
-        "Curve": [
-          { name: "Dresses", image: "https://via.placeholder.com/96" },
-          { name: "Tops", image: "https://via.placeholder.com/96" },
-          { name: "Blouses", image: "https://via.placeholder.com/96" },
-          { name: "T-shirts", image: "https://via.placeholder.com/96" },
-          { name: "Bottoms", image: "https://via.placeholder.com/96" },
-          { name: "Sweatshirts", image: "https://via.placeholder.com/96" },
-          { name: "Jackets & Coats", image: "https://via.placeholder.com/96" },
-          { name: "Beachwear", image: "https://via.placeholder.com/96" },
-          { name: "Jumpsuits", image: "https://via.placeholder.com/96" }
-        ],
-        "Men Clothing": [
-          { name: "Shirts", image: "https://via.placeholder.com/96" },
-          { name: "T-shirts", image: "https://via.placeholder.com/96" },
-          { name: "Pants", image: "https://via.placeholder.com/96" },
-          { name: "Jackets", image: "https://via.placeholder.com/96" }
-        ],
-        "Shoes": [
-          { name: "Sneakers", image: "https://via.placeholder.com/96" },
-          { name: "Boots", image: "https://via.placeholder.com/96" },
-          { name: "Sandals", image: "https://via.placeholder.com/96" },
-          { name: "Heels", image: "https://via.placeholder.com/96" }
-        ],
-        "Underwear & Sleepwear": [
-          { name: "Underwear", image: "https://via.placeholder.com/96" },
-          { name: "Sleepwear", image: "https://via.placeholder.com/96" }
-        ],
-        "Home & Kitchen": [
-          { name: "Appliances", image: "https://via.placeholder.com/96" },
-          { name: "Cookware", image: "https://via.placeholder.com/96" },
-          { name: "Utensils", image: "https://via.placeholder.com/96" },
-          { name: "Storage", image: "https://via.placeholder.com/96" }
-        ],
-        "Jewelry & Accessories": [
-          { name: "Necklaces", image: "https://via.placeholder.com/96" },
-          { name: "Earrings", image: "https://via.placeholder.com/96" },
-          { name: "Bracelets", image: "https://via.placeholder.com/96" },
-          { name: "Bags", image: "https://via.placeholder.com/96" }
-        ],
-        "Electronics": [
-          { name: "Tablets", image: "https://via.placeholder.com/96" },
-          { name: "Phones", image: "https://via.placeholder.com/96" },
-          { name: "Televisions", image: "https://via.placeholder.com/96" },
-          { name: "Audio", image: "https://via.placeholder.com/96" },
-          { name: "Accessories", image: "https://via.placeholder.com/96" }
-        ],
-        "New In": [
-          { name: "Featured", image: "https://via.placeholder.com/96" },
-          { name: "Trending", image: "https://via.placeholder.com/96" }
-        ],
-        "Sale": [
-          { name: "Clearance", image: "https://via.placeholder.com/96" },
-          { name: "Discounts", image: "https://via.placeholder.com/96" }
-        ],
-        "Sports": [
-          { name: "Activewear", image: "https://via.placeholder.com/96" },
-          { name: "Sports Shoes", image: "https://via.placeholder.com/96" },
-          { name: "Equipment", image: "https://via.placeholder.com/96" },
-          { name: "Accessories", image: "https://via.placeholder.com/96" }
-        ]
+        "Women Clothing": [{ name: "Dresses" }],
+        "Home & Kitchen": [{ name: "Appliances" }],
+        "Electronics": [{ name: "Tablets" }]
       };
 
-      const handleSearchChange = debounce((value) => {
-        setSearchQuery(value || '');
-      }, 300);
-
-      const clearSearch = () => {
-        setSearchQuery("");
-      };
+      const handleSearchChange = debounce((value) => setSearchQuery(value || ''), 300);
+      const clearSearch = () => setSearchQuery("");
 
       const addToCart = (product) => {
-        if (!product || !product.title) return;
-        setCart((prevCart) => {
-          const safeCart = Array.isArray(prevCart) ? prevCart : [];
-          const existingItemIndex = safeCart.findIndex(
-            (item) => item?.title === product.title && item?.size === product.size
-          );
+        setCart((prev) => {
+          const existingItemIndex = prev.findIndex((item) => item.title === product.title && item.size === product.size);
           if (existingItemIndex >= 0) {
-            const newCart = [...safeCart];
-            newCart[existingItemIndex] = {
-              ...newCart[existingItemIndex],
-              quantity: (Number.isFinite(newCart[existingItemIndex]?.quantity) ? newCart[existingItemIndex].quantity : 0) + 1
-            };
+            const newCart = [...prev];
+            newCart[existingItemIndex].quantity += 1;
             return newCart;
           }
-          return [...safeCart, { ...product, quantity: 1 }];
+          return [...prev, { ...product, quantity: 1 }];
         });
       };
 
       const removeFromCart = (index) => {
-        setCart((prevCart) => {
-          const safeCart = Array.isArray(prevCart) ? prevCart : [];
-          return safeCart.filter((_, i) => i !== index);
-        });
+        setCart((prev) => prev.filter((_, i) => i !== index));
       };
 
-      const toggleWishlist = (productTitle) => {
-        if (!productTitle) return;
-        setWishlist((prevWishlist) => {
-          const safeWishlist = Array.isArray(prevWishlist) ? prevWishlist : [];
-          if (safeWishlist.includes(productTitle)) {
-            return safeWishlist.filter((title) => title !== productTitle);
-          }
-          return [...safeWishlist, productTitle];
-        });
+      const toggleWishlist = (title) => {
+        setWishlist((prev) => prev.includes(title) ? prev.filter((t) => t !== title) : [...prev, title]);
       };
 
       const openVariationModal = (product) => {
-        if (!product || !product.title) return;
         setVariationModalProduct(product);
       };
 
@@ -1409,7 +952,6 @@
       };
 
       const openDetailsPopup = (product) => {
-        if (!product || !product.title) return;
         setDetailsPopupProduct(product);
       };
 
@@ -1417,82 +959,76 @@
         setDetailsPopupProduct(null);
       };
 
-      const cartItemCount = Array.isArray(cart)
-        ? cart.reduce((sum, item) => sum + (Number.isFinite(item?.quantity) ? item.quantity : 0), 0)
-        : 0;
-
-      const wishlistCount = Array.isArray(wishlist) ? wishlist.length : 0;
+      const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
       return (
-        <ErrorBoundary>
-          <div className="min-h-screen bg-gray-100">
-            <FreeShippingBanner />
-            <Header
-              cartItemCount={cartItemCount}
-              wishlistCount={wishlistCount}
-              searchQuery={searchQuery}
-              handleSearchChange={handleSearchChange}
-              clearSearch={clearSearch}
+        <div className="min-h-screen bg-gray-100">
+          <FreeShippingBanner />
+          <Header
+            cartItemCount={cartItemCount}
+            wishlistCount={wishlist.length}
+            searchQuery={searchQuery}
+            handleSearchChange={handleSearchChange}
+            clearSearch={clearSearch}
+            cart={cart}
+            removeFromCart={removeFromCart}
+            isMiniCartOpen={isMiniCartOpen}
+            toggleMiniCart={toggleMiniCart}
+            closeMiniCart={closeMiniCart}
+            openCheckoutModal={openCheckoutModal}
+            wishlist={wishlist}
+            toggleWishlist={toggleWishlist}
+            products={productsRef}
+            isMiniWishlistOpen={isMiniWishlistOpen}
+            toggleMiniWishlist={toggleMiniWishlist}
+            closeMiniWishlist={closeMiniWishlist}
+            addToCart={addToCart}
+            openVariationModal={openVariationModal}
+            categories={categories}
+            subcategories={subcategories}
+            setSelectedCategory={setSelectedCategory}
+            setSelectedSubcategory={setSelectedSubcategory}
+          />
+          <SecondaryBanner />
+          <SaleProductsSection
+            products={productsRef}
+            openVariationModal={openVariationModal}
+            addToCart={addToCart}
+            toggleWishlist={toggleWishlist}
+            wishlist={wishlist}
+          />
+          <ProductGrid
+            openVariationModal={openVariationModal}
+            addToCart={addToCart}
+            toggleWishlist={toggleWishlist}
+            wishlist={wishlist}
+            searchQuery={searchQuery}
+            products={productsRef}
+            selectedCategory={selectedCategory}
+            selectedSubcategory={selectedSubcategory}
+            openDetailsPopup={openDetailsPopup}
+          />
+          {variationModalProduct && (
+            <VariationModal
+              product={variationModalProduct}
+              onAddToCart={addToCart}
+              onClose={closeVariationModal}
+            />
+          )}
+          {isCheckoutModalOpen && (
+            <CheckoutModal
               cart={cart}
-              removeFromCart={removeFromCart}
-              isMiniCartOpen={isMiniCartOpen}
-              toggleMiniCart={toggleMiniCart}
-              closeMiniCart={closeMiniCart}
-              openCheckoutModal={openCheckoutModal}
-              wishlist={wishlist}
-              toggleWishlist={toggleWishlist}
-              products={productsRef}
-              isMiniWishlistOpen={isMiniWishlistOpen}
-              toggleMiniWishlist={toggleMiniWishlist}
-              closeMiniWishlist={closeMiniWishlist}
-              addToCart={addToCart}
-              openVariationModal={openVariationModal}
-              categories={categories}
-              subcategories={subcategories}
-              setSelectedCategory={setSelectedCategory}
-              setSelectedSubcategory={setSelectedSubcategory}
+              onConfirm={confirmCheckout}
+              onClose={closeCheckoutModal}
             />
-            <SecondaryBanner />
-            <SaleProductsSection
-              products={productsRef}
-              openVariationModal={openVariationModal}
-              addToCart={addToCart}
-              toggleWishlist={toggleWishlist}
-              wishlist={wishlist}
+          )}
+          {detailsPopupProduct && (
+            <ProductDetailsPopup
+              product={detailsPopupProduct}
+              onClose={closeDetailsPopup}
             />
-            <ProductGrid
-              openVariationModal={openVariationModal}
-              addToCart={addToCart}
-              toggleWishlist={toggleWishlist}
-              wishlist={wishlist}
-              searchQuery={searchQuery}
-              products={productsRef}
-              selectedCategory={selectedCategory}
-              selectedSubcategory={selectedSubcategory}
-              openDetailsPopup={openDetailsPopup}
-            />
-            {variationModalProduct && (
-              <VariationModal
-                product={variationModalProduct}
-                onAddToCart={addToCart}
-                onClose={closeVariationModal}
-              />
-            )}
-            {isCheckoutModalOpen && (
-              <CheckoutModal
-                cart={cart}
-                onConfirm={confirmCheckout}
-                onClose={closeCheckoutModal}
-              />
-            )}
-            {detailsPopupProduct && (
-              <ProductDetailsPopup
-                product={detailsPopupProduct}
-                onClose={closeDetailsPopup}
-              />
-            )}
-          </div>
-        </ErrorBoundary>
+          )}
+        </div>
       );
     };
 
